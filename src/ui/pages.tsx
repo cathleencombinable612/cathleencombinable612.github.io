@@ -63,7 +63,8 @@ function RequestSong() {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ _subject: `Pulse song request: ${t}`, _captcha: 'false', request: t }),
       })
-      if (!r.ok) throw new Error(String(r.status))
+      const j = await r.json().catch(() => ({})) as { success?: string | boolean }
+      if (!r.ok || String(j.success) === 'false') throw new Error(String(r.status))
       setState('sent'); setText('')
     } catch { setState('error') }
   }
