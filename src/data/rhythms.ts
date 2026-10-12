@@ -1,4 +1,5 @@
 import type { Pattern } from '../engine/types'
+import { MORE_RHYTHMS } from './more'
 
 export type Evidence = 'established' | 'mixed' | 'speculative'
 
@@ -104,6 +105,8 @@ export const RHYTHMS: RhythmEntry[] = [
     effect: 'A sense of arrival: "something is about to change."',
     why: 'Fills break the repetition the groove has trained the listener to expect. A falling pitch (snare, high tom, low tom) works like a cadence, and steady 16ths make the drop toward the next downbeat feel inevitable. See the Storytelling page.' },
 ]
+
+RHYTHMS.push(...MORE_RHYTHMS)
 
 export const PATTERNS: Record<string, Pattern> = {}
 export const registerPatterns = (ps: Pattern[]) => ps.forEach(x => (PATTERNS[x.id] = x))

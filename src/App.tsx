@@ -13,7 +13,7 @@ export default function App() {
   const [page, sub] = route.split('/')
   return (
     <PlayerProvider>
-      <div className="max-w-xl mx-auto px-6 pb-40">
+      <div className="max-w-xl mx-auto px-6 pb-16">
         <nav className="sticky top-0 z-20 -mx-6 px-6 bg-ink/80 backdrop-blur-xl flex items-center justify-between h-16">
           <a href="#/library" className="flex items-center gap-2 font-semibold tracking-tight"><span className="w-2 h-2 rounded-full bg-amber" />Pulse</a>
           <div className="hidden sm:flex gap-5 text-sm">{NAV.map(([k, l]) => <a key={k} href={`#/${k}`} className={page === k ? 'text-amber' : 'text-bone/60'}>{l}</a>)}</div>
@@ -22,12 +22,12 @@ export default function App() {
             {NAV.map(([k, l]) => <a key={k} href={`#/${k}`} onClick={() => setMenu(false)} className={`block py-3 text-lg ${page === k ? 'text-amber' : 'text-bone/80'}`}>{l}</a>)}
           </div>}
         </nav>
+        <PlayerBar />
         <main key={route} className="pt-8 rise">
           {page === 'about' ? <About /> : page === 'pitch' ? <Pitch /> : page === 'theory' ? <Theory /> : page === 'story' ? <Story /> : page === 'history' ? <History /> : page === 'lens' ? <Lens id={sub} go={go} /> : <Library />}
         </main>
         <footer className="mt-24 pt-8 border-t border-line flex justify-between text-xs text-mute"><span>Pulse</span><a href="#/about">About & credits</a></footer>
       </div>
-      <PlayerBar />
     </PlayerProvider>
   )
 }

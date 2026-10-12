@@ -1,5 +1,6 @@
 import type { Fill, Pattern } from '../engine/types'
 import { registerPatterns } from './rhythms'
+import { MORE_FILLS, OLD_FILL_CATEGORY } from './more'
 
 const F = (id: string, name: string, steps: number, stepsPerBeat: number, tracks: Pattern['tracks'], description: string, crashAfter = true): Fill =>
   ({ pattern: { id: `fill-${id}`, name, steps, stepsPerBeat, tracks }, crashAfter, description })
@@ -34,6 +35,10 @@ export const FILLS: Fill[] = [
     back: '........X7X7....', tomLo: '............X7X7' },
     'A simple two-beat fill that keeps the groove for the first half. Often the most musical choice.', false),
 ]
+
+FILLS.forEach(f => { f.category = OLD_FILL_CATEGORY[f.pattern.id] ?? 'Rock' })
+FILLS.push(...MORE_FILLS)
+FILLS.sort((a, b) => (a.category ?? '').localeCompare(b.category ?? ''))
 
 export const FILL_EVERY = [0, 4, 8] as const
 registerPatterns(FILLS.map(f => f.pattern))

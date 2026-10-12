@@ -23,3 +23,8 @@ body { font-family: Inter, ui-sans-serif, -apple-system, "SF Pro Text", "Segoe U
 @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(255,176,0,.45) } 100% { box-shadow: 0 0 0 14px rgba(255,176,0,0) } }
 .pulse-ring { animation: ring 1.6s ease-out infinite; }
 @media (prefers-reduced-motion: reduce) { .rise, .pulse-ring { animation: none } * { transition: none !important } }
+
+@layer components {
+  .sel { @apply h-10 px-3 rounded-xl bg-white/[0.06] text-sm text-bone outline-none appearance-none; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 28px; }
+  .sel option, .sel optgroup { background: #141416; color: #eee; }
+}

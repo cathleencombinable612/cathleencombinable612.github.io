@@ -28,6 +28,8 @@ export interface Pattern {
   barTicks?: number
   /** Display time signature, e.g. '7/8'. */
   timeSig?: string
+  /** URL for the default tempo's source. */
+  bpmSource?: string
   /** Category for browsing. */
   category?: string
   /** Where the default tempo comes from (shown as a note). */
@@ -65,4 +67,4 @@ export interface KitVoice {
 export interface Kit { id: string; name: string; blurb: string; voices: Record<Voice, KitVoice> }
 
 /** A fill replaces the groove for its bar. crashAfter = crash on the next downbeat. */
-export interface Fill { pattern: Pattern; crashAfter: boolean; description: string }
+export interface Fill { pattern: Pattern; crashAfter: boolean; description: string; category?: string }

@@ -4,13 +4,13 @@ import type { Arrangement, Fill, Layer, Pattern, Voice } from '../engine/types'
 import { VOICES } from '../engine/types'
 import { velocityOf, ticksPerStep } from '../engine/pattern'
 import { KITS } from '../data/kits'
-import { PATTERNS } from '../data/rhythms'
+import { PATTERNS, RHYTHMS } from '../data/rhythms'
 import { FILLS, FILL_EVERY } from '../data/fills'
 import { SONGS, loadSongBars, type Song } from '../data/songs'
 import { applyTuning, applyShift, type Tuning } from '../engine/pitch'
 
 setSampleBase(`${import.meta.env.BASE_URL}samples/acoustic/`)
-export const ALL_FILLS: Fill[] = [...FILLS, ...SONGS.flatMap(s => s.fills)]
+export const ALL_FILLS: Fill[] = [...FILLS, ...SONGS.flatMap(s => s.fills.map(f => ({ ...f, category: 'Song fills' })))]
 
 interface Ctx {
   layers: Layer[]; playing: boolean; bpm: number; swing: number; kitId: string; section: number | null; arrangement: Arrangement | null
@@ -53,6 +53,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (!eng.current) {
       eng.current = new RhythmEngine(); eng.current.setKit(KITS[0]); eng.current.onSection = setSection
       eng.current.onBar = (_b, f) => setInFill(f); eng.current.onSongBar = setSongBar
+      ;(window as unknown as { __pulseEngine?: RhythmEngine }).__pulseEngine = eng.current // used by the timing test
     }
     return eng.current
   }, [])
@@ -199,70 +200,134 @@ function Segmented<T extends string | number>({ value, options, onChange }: { va
   )
 }
 
+export function meterOf(p: Pattern): string {
+  if (p.timeSig) return p.timeSig
+  const t = p.steps * ticksPerStep(p)
+  if (t === 48) return p.stepsPerBeat === 3 || p.stepsPerBeat === 6 ? '12/8' : '4/4'
+  if (t === 36) return p.stepsPerBeat === 3 ? '9/8' : '3/4'
+  if (t === 24) return p.stepsPerBeat === 3 ? '6/8' : '2/4'
+  if (t === 60) return '5/4'
+  if (t === 96) return '4/4 ×2'
+  return t % 6 === 0 ? `${t / 6}/8` : `${t}/12`
+}
+interface Item { id: string; name: string; cat: string; meter: string; bpm?: number; pattern?: Pattern; song?: Song }
+function useCatalog(): Item[] {
+  return useMemo(() => {
+    const out: Item[] = []
+    for (const r of RHYTHMS) out.push({ id: r.pattern.id, name: r.pattern.name, cat: r.family, meter: meterOf(r.pattern), bpm: r.pattern.suggestedBpm, pattern: r.pattern })
+    for (const sg of SONGS) out.push({ id: `song:${sg.raw.id}`, name: sg.raw.song, cat: sg.raw.category === 'Journeys' ? 'Journeys' : 'Songs', meter: sg.raw.timeSig, bpm: sg.raw.bpm, song: sg, pattern: sg.pattern })
+    return out
+  }, [])
+}
+
+/** Searchable list of every rhythm and song. ▶ replaces, + stacks a layer. */
+function Browser({ onPicked }: { onPicked?: () => void }) {
+  const P = usePlayer(); const all = useCatalog()
+  const [q, setQ] = useState(''); const [cat, setCat] = useState(''); const [meter, setMeter] = useState('')
+  const cats = useMemo(() => [...new Set(all.map(i => i.cat))], [all])
+  const meters = useMemo(() => [...new Set(all.map(i => i.meter))].sort((a, b) => parseInt(a) - parseInt(b) || a.localeCompare(b)), [all])
+  const ql = q.trim().toLowerCase()
+  const items = all.filter(i => (!cat || i.cat === cat) && (!meter || i.meter === meter) && (!ql || `${i.name} ${i.cat} ${i.song?.raw.artist ?? ''} ${i.song?.raw.drummer ?? ''}`.toLowerCase().includes(ql)))
+  return <div>
+    <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Search ${all.length} rhythms and songs`} className="w-full h-11 px-4 rounded-xl bg-white/[0.06] text-[15px] placeholder:text-mute outline-none focus:bg-white/[0.09]" />
+    <div className="mt-2 flex gap-2">
+      <select value={cat} onChange={e => setCat(e.target.value)} className="sel flex-1"><option value="">All categories</option>{cats.map(c => <option key={c}>{c}</option>)}</select>
+      <select value={meter} onChange={e => setMeter(e.target.value)} className="sel w-28"><option value="">Any meter</option>{meters.map(m => <option key={m}>{m}</option>)}</select>
+    </div>
+    <ul className="mt-3 divide-y divide-line">{items.slice(0, 200).map(i => <li key={i.id} className="flex items-center gap-2 py-2">
+      <div className="flex-1 min-w-0"><div className="text-[15px] truncate">{i.name}</div><div className="text-[11px] text-mute truncate">{i.cat} · {i.meter}{i.bpm ? ` · ${i.bpm} BPM` : ''}</div></div>
+      <button aria-label={`Play ${i.name}`} className="w-10 h-10 grid place-items-center rounded-full bg-white/[0.06] active:scale-90" onClick={async () => { if (i.song) { await P.loadSong(i.song) } else P.load(i.pattern!); if (!P.playing || i.song) await P.toggle(); onPicked?.() }}><PlayGlyph /></button>
+      {i.pattern && <button aria-label={`Add ${i.name} as a layer`} className="w-10 h-10 grid place-items-center rounded-full bg-white/[0.06] text-lg active:scale-90" onClick={() => P.load(i.pattern!, true)}>+</button>}
+    </li>)}</ul>
+    {items.length === 0 && <p className="py-6 text-sm text-mute">Nothing matches.</p>}
+  </div>
+}
+
+function FillPicker() {
+  const P = usePlayer()
+  const groups = useMemo(() => { const g: Record<string, Fill[]> = {}; for (const f of ALL_FILLS) (g[f.category ?? 'Song fills'] ??= []).push(f); return g }, [])
+  return <section>
+    <Label>Fills</Label>
+    <div className="flex gap-2">
+      <select value={P.fillId ?? ''} onChange={e => P.setFill(e.target.value || null, P.fillEvery || 4)} className="sel flex-1">
+        <option value="">No fill</option>
+        {Object.entries(groups).map(([g, fs]) => <optgroup key={g} label={g}>{fs.map(f => <option key={f.pattern.id} value={f.pattern.id}>{f.pattern.name}</option>)}</optgroup>)}
+      </select>
+      <select value={P.fillEvery} onChange={e => P.setFill(P.fillId, +e.target.value)} className="sel w-28" disabled={!P.fillId}>{FILL_EVERY.filter(Boolean).map(v => <option key={v} value={v}>Every {v}</option>)}</select>
+    </div>
+    {P.fillId && <p className="mt-2 text-[11px] text-mute">{ALL_FILLS.find(f => f.pattern.id === P.fillId)?.description}</p>}
+  </section>
+}
+
+/** Bottom sheet: grab handle, close button, swipe down or tap outside to close. */
+function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
+  const [dy, setDy] = useState(0); const y0 = useRef<number | null>(null)
+  useEffect(() => { if (!open) setDy(0) }, [open])
+  return <>
+    <div onClick={onClose} className={`fixed inset-0 z-40 bg-black/55 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
+    <div role="dialog" aria-modal="true" aria-hidden={!open} className={`fixed inset-x-0 bottom-0 z-50 transition-transform ${y0.current === null ? 'duration-300 ease-out' : 'duration-0'} ${open ? '' : 'translate-y-full'}`} style={open && dy ? { transform: `translateY(${dy}px)` } : undefined}>
+      <div className="max-w-xl mx-auto rounded-t-[24px] bg-[#141416] border-t border-white/[0.08] shadow-2xl shadow-black pb-[env(safe-area-inset-bottom)]">
+        <div className="relative h-12 touch-none cursor-grab" onTouchStart={e => { y0.current = e.touches[0].clientY }} onTouchMove={e => { if (y0.current !== null) setDy(Math.max(0, e.touches[0].clientY - y0.current)) }} onTouchEnd={() => { if (dy > 80) onClose(); y0.current = null; setDy(0) }}>
+          <span className="absolute left-1/2 top-2.5 -translate-x-1/2 w-10 h-1.5 rounded-full bg-white/25" />
+          <button aria-label="Close player" onClick={onClose} className="absolute right-2 top-1 w-11 h-11 grid place-items-center rounded-full text-bone/70 active:scale-90">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+        </div>
+        <div className="max-h-[78vh] overflow-y-auto overscroll-contain px-4 pb-5">{children}</div>
+      </div>
+    </div>
+  </>
+}
+
+/** Compact player pinned under the nav; details open in a bottom sheet. */
 export function PlayerBar() {
   const P = usePlayer()
   const [open, setOpen] = useState(false)
+  const [tab, setTab] = useState<'now' | 'browse' | 'sound'>('now')
   const sg = P.song; const si = sg ? sectionOf(sg, P.songBar) : 0
   const title = sg ? sg.raw.song : P.arrangement ? P.arrangement.name : P.layers.length ? P.layers.map(l => l.pattern.name).join(' + ') : 'Choose a rhythm'
-  const sub = sg ? `${sg.sections[si].name} · bar ${P.songBar - sg.sections[si].start + 1}/${sg.sections[si].bars}${P.loopSection !== null ? ' · looping' : ''}` : P.arrangement && P.section !== null ? P.arrangement.sections[P.section].name : P.inFill ? 'Fill' : `${KITS.find(k => k.id === P.kitId)!.name}`
+  const sub = sg && sg.sections[si] ? `${sg.sections[si].name} · bar ${P.songBar - sg.sections[si].start + 1}/${sg.sections[si].bars}${P.loopSection !== null ? ' · looping' : ''}` : P.arrangement && P.section !== null ? P.arrangement.sections[P.section].name : P.inFill ? 'Fill' : P.layers.length ? `${P.layers.length} layer${P.layers.length > 1 ? 's' : ''} · ${KITS.find(k => k.id === P.kitId)!.name}` : 'Tap + to browse'
   const kitLoading = P.kitProgress < 1 && P.playing && KITS.find(k => k.id === P.kitId)!.voices.low.kind === 'sample'
-  return (
-    <>
-      <div onClick={() => setOpen(false)} className={`fixed inset-0 bg-black/50 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
-      <div className="fixed bottom-0 inset-x-0 z-30 pb-[env(safe-area-inset-bottom)]">
-        <div className="max-w-xl mx-auto px-3 pb-3">
-          <div className="rounded-[22px] bg-[#141416]/90 backdrop-blur-xl border border-white/[0.07] shadow-2xl shadow-black/60 overflow-hidden">
-            <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-              <div className="overflow-hidden">
-                <div className="max-h-[68vh] overflow-y-auto px-4 pt-5 pb-2 space-y-6">
-                  {sg && <SongForm />}
-                  {!P.arrangement && !sg && (P.layers.length ? <div className="space-y-3">{P.layers.map(l => <LayerCard key={l.id} layer={l} />)}</div>
-                    : <p className="text-sm text-mute">Load a rhythm, then add layers to hear how parts combine.</p>)}
-                  {P.arrangement && <ol className="space-y-1.5 text-sm">{P.arrangement.sections.map((s, i) => <li key={i} className={`transition-colors ${P.section === i ? 'text-amber' : 'text-mute'}`}>{s.name} · {s.bars} bars</li>)}</ol>}
-
-                  <section>
-                    <Label>Tempo <span className="text-bone tabular-nums">{P.bpm}</span> <span className="normal-case tracking-normal">BPM</span></Label>
-                    <input type="range" min={40} max={260} value={P.bpm} onChange={e => P.setBpm(+e.target.value)} className="slider" aria-label="Tempo" />
-                    
-                  </section>
-                  <section>
-                    <Label>Swing <span className="text-bone tabular-nums">{Math.round(P.swing * 100)}%</span></Label>
-                    <input type="range" min={0} max={1} step={0.01} value={P.swing} onChange={e => P.setSwing(+e.target.value)} className="slider" aria-label="Swing" />
-                  </section>
-                  <section>
-                    <Label>Kit</Label>
-                    <div className="flex flex-wrap gap-2">{KITS.map(k => <button key={k.id} onClick={() => P.setKit(k.id)} className={`chip ${P.kitId === k.id ? 'chip-on' : ''}`}>{k.name}</button>)}</div>
-                    {P.kitProgress > 0 && P.kitProgress < 1 && <div className="mt-2 h-0.5 rounded bg-white/10 overflow-hidden"><div className="h-full bg-amber transition-[width] duration-200" style={{ width: `${P.kitProgress * 100}%` }} /></div>}
-                  </section>
-                  <section>
-                    <div className="flex items-center justify-between mb-2"><Label className="mb-0">Fill</Label>
-                      <Segmented value={P.fillId ? P.fillEvery : 0} options={FILL_EVERY.map(v => ({ v, l: v ? `Every ${v}` : 'Off' }))} onChange={v => v ? P.setFill(P.fillId ?? FILLS[0].pattern.id, v) : P.setFill(null)} /></div>
-                    <div className="flex flex-wrap gap-2">{FILLS.map(f => <button key={f.pattern.id} title={f.description} onClick={() => P.setFill(f.pattern.id)} className={`chip ${P.fillId === f.pattern.id ? 'chip-on' : ''}`}>{f.pattern.name}</button>)}</div>
-                    {SONGS.some(s => s.fills.length) && <div className="flex flex-wrap gap-2 mt-2">{SONGS.flatMap(s => s.fills).map(f => <button key={f.pattern.id} onClick={() => P.setFill(f.pattern.id)} className={`chip ${P.fillId === f.pattern.id ? 'chip-on' : ''}`}>{f.pattern.name}</button>)}</div>}
-                    {P.fillId && <p className="mt-2 text-[11px] text-mute">{ALL_FILLS.find(f => f.pattern.id === P.fillId)?.description}</p>}
-                  </section>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 h-[68px] px-3">
-              <button aria-label={P.playing ? 'Stop' : 'Play'} onClick={P.toggle} disabled={!P.layers.length && !P.arrangement && !P.song}
-                className={`relative w-12 h-12 shrink-0 rounded-full bg-amber text-ink grid place-items-center transition-transform active:scale-90 disabled:opacity-25 ${P.playing ? 'pulse-ring' : ''}`}>
-                {P.playing ? <span className="w-3.5 h-3.5 rounded-[2px] bg-ink" /> : <span className="ml-1 w-0 h-0 border-y-[8px] border-y-transparent border-l-[13px] border-l-ink" />}
-              </button>
-              <button className="flex-1 min-w-0 text-left" onClick={() => setOpen(o => !o)}>
-                <div className="text-[15px] font-medium truncate">{title}</div>
-                <div className="text-xs text-mute truncate">{kitLoading ? `Loading samples ${Math.round(P.kitProgress * 100)}%` : sub}</div>
-              </button>
-              <span className="text-xs tabular-nums text-mute">{P.bpm}</span>
-              <button onClick={() => setOpen(o => !o)} aria-label={open ? 'Close mixer' : 'Open mixer'} className="w-10 h-10 grid place-items-center rounded-full text-bone/70 active:scale-90 transition-transform">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}><path d="M6 15l6-6 6 6" /></svg>
-              </button>
-            </div>
-          </div>
-        </div>
+  const show = (t: typeof tab) => { setTab(t); setOpen(true) }
+  return <>
+    <div className="sticky top-16 z-20 -mx-6 px-4 pb-2 bg-ink/85 backdrop-blur-xl">
+      <div className="flex items-center gap-3 h-14 px-2 rounded-2xl bg-white/[0.05] border border-white/[0.06]">
+        <button aria-label={P.playing ? 'Stop' : 'Play'} onClick={P.toggle} disabled={!P.layers.length && !P.arrangement && !P.song}
+          className={`relative w-10 h-10 shrink-0 rounded-full bg-amber text-ink grid place-items-center active:scale-90 transition-transform disabled:opacity-25 ${P.playing ? 'pulse-ring' : ''}`}>
+          {P.playing ? <span className="w-3 h-3 rounded-[2px] bg-ink" /> : <span className="ml-0.5 w-0 h-0 border-y-[7px] border-y-transparent border-l-[11px] border-l-ink" />}
+        </button>
+        <button className="flex-1 min-w-0 text-left" onClick={() => show('now')}>
+          <div className="text-[14px] font-medium truncate">{title}</div>
+          <div className="text-[11px] text-mute truncate">{kitLoading ? `Loading samples ${Math.round(P.kitProgress * 100)}%` : sub}</div>
+        </button>
+        <button onClick={() => show('sound')} className="text-xs tabular-nums text-mute px-1 h-10">{P.bpm}</button>
+        <button aria-label="Browse rhythms" onClick={() => show('browse')} className="w-10 h-10 shrink-0 grid place-items-center rounded-full bg-white/[0.08] text-xl active:scale-90">+</button>
       </div>
-    </>
-  )
+    </div>
+    <Sheet open={open} onClose={() => setOpen(false)}>
+      <div className="mb-4"><Segmented value={tab} onChange={setTab} options={[{ v: 'now', l: 'Now playing' }, { v: 'browse', l: 'Browse' }, { v: 'sound', l: 'Sound' }]} /></div>
+      {tab === 'now' && <div className="space-y-3">
+        {sg && <SongForm />}
+        {sg?.raw.tuning && <p className="text-[11px] text-mute">Tuning ({sg.raw.tuning.status}): {sg.raw.tuning.note}</p>}
+        {!sg && P.arrangement && <ol className="space-y-1.5 text-sm">{P.arrangement.sections.map((s, i) => <li key={i} className={P.section === i ? 'text-amber' : 'text-mute'}>{s.name} · {s.bars} bars</li>)}</ol>}
+        {!sg && !P.arrangement && (P.layers.length ? P.layers.map(l => <LayerCard key={l.id} layer={l} />) : <p className="text-sm text-mute">Nothing loaded. Open Browse to pick a rhythm, then tap + to stack layers.</p>)}
+        {!sg && !P.arrangement && <button className="w-full h-11 rounded-xl border border-dashed border-white/15 text-sm text-bone/70" onClick={() => setTab('browse')}>+ Add a layer</button>}
+      </div>}
+      {tab === 'browse' && <Browser />}
+      {tab === 'sound' && <div className="space-y-6">
+        <section><Label>Tempo <span className="text-bone tabular-nums">{P.bpm}</span> <span className="normal-case tracking-normal">BPM</span></Label>
+          <input type="range" min={40} max={260} value={P.bpm} onChange={e => P.setBpm(+e.target.value)} className="slider" aria-label="Tempo" />
+          {P.layers[0]?.pattern.bpmNote && <p className="mt-1.5 text-[11px] text-mute leading-snug">{P.layers[0].pattern.bpmNote}{P.layers[0].pattern.bpmSource && <> <a className="underline underline-offset-2" href={P.layers[0].pattern.bpmSource} target="_blank" rel="noreferrer">source</a></>}</p>}</section>
+        <section><Label>Swing <span className="text-bone tabular-nums">{Math.round(P.swing * 100)}%</span></Label>
+          <input type="range" min={0} max={1} step={0.01} value={P.swing} onChange={e => P.setSwing(+e.target.value)} className="slider" aria-label="Swing" /></section>
+        <section><Label>Kit</Label>
+          <select value={P.kitId} onChange={e => P.setKit(e.target.value)} className="sel w-full">{KITS.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}</select>
+          <p className="mt-1.5 text-[11px] text-mute">{KITS.find(k => k.id === P.kitId)!.blurb}</p>
+          {P.kitProgress > 0 && P.kitProgress < 1 && <div className="mt-2 h-0.5 rounded bg-white/10 overflow-hidden"><div className="h-full bg-amber transition-[width] duration-200" style={{ width: `${P.kitProgress * 100}%` }} /></div>}</section>
+        <FillPicker />
+      </div>}
+    </Sheet>
+  </>
 }
 const Label = ({ children, className = '' }: { children: ReactNode; className?: string }) => <div className={`mb-2 text-[11px] uppercase tracking-[0.12em] text-mute flex gap-1.5 items-baseline ${className}`}>{children}</div>
 
