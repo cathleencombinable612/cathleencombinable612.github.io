@@ -8,8 +8,11 @@ import { THEORY } from '../data/theory'
 import { SONGS as ALL_SONGS, type Song } from '../data/songs'
 // Original multi-section drum journeys live on the Story page, not in Songs.
 const isJourney = (s: Song) => s.raw.id.startsWith('j-')
-const SONGS = ALL_SONGS.filter(s => !isJourney(s))
+/** Songs tab = real recorded songs only (transcribed parts); generic style pieces and references go to Story. */
+export const isRealSong = (s: Song) => !!s.raw.transcription && !isJourney(s) && !/Traditional/i.test(s.raw.artist) && !/\(reference\)|generic/i.test(s.raw.song)
+const SONGS = ALL_SONGS.filter(isRealSong)
 const JOURNEYS = ALL_SONGS.filter(isJourney)
+const STUDIES = ALL_SONGS.filter(s => !isRealSong(s) && !isJourney(s))
 import LENS from '../data/lens-deep.json'
 import { videosFor, type Video } from '../data/videos'
 import type { Pattern, Voice } from '../engine/types'
@@ -122,6 +125,12 @@ export function Story() {
     {JOURNEYS.length > 0 && <section className="mb-10"><h2 className="text-lg font-medium">Drum journeys</h2>
       <p className="mt-2 text-bone/70 leading-relaxed">Original multi-section pieces that put these ideas to work over a few minutes each.</p>
       <ul className="mt-4 divide-y divide-line">{JOURNEYS.map(j => <li key={j.raw.id} className="py-3 flex items-center gap-3">
+        <div className="flex-1 min-w-0"><p className="font-medium truncate">{j.raw.song}</p><p className="text-xs text-mute">{j.sections.length} sections · {j.sections.reduce((n, x) => n + x.bars, 0)} bars</p></div>
+        <button aria-label={`Play ${j.raw.song}`} onClick={async () => { await loadSong(j); await toggle() }} className="w-10 h-10 rounded-full bg-white/[0.08] grid place-items-center">▶</button>
+      </li>)}</ul></section>}
+    {STUDIES.length > 0 && <section className="mb-10"><h2 className="text-lg font-medium">Style studies</h2>
+      <p className="mt-2 text-bone/70 leading-relaxed">Generic grooves in the style of an era or player, and reference pulses. Not transcriptions of specific recordings.</p>
+      <ul className="mt-4 divide-y divide-line">{STUDIES.map(j => <li key={j.raw.id} className="py-3 flex items-center gap-3">
         <div className="flex-1 min-w-0"><p className="font-medium truncate">{j.raw.song}</p><p className="text-xs text-mute">{j.sections.length} sections · {j.sections.reduce((n, x) => n + x.bars, 0)} bars</p></div>
         <button aria-label={`Play ${j.raw.song}`} onClick={async () => { await loadSong(j); await toggle() }} className="w-10 h-10 rounded-full bg-white/[0.08] grid place-items-center">▶</button>
       </li>)}</ul></section>}

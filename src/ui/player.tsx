@@ -229,7 +229,7 @@ function useCatalog(): Item[] {
 function Browser({ onPicked }: { onPicked?: () => void }) {
   const P = usePlayer(); const all0 = useCatalog()
   // Trance & pulse sits last here too, matching Styles; journeys belong to Story, not the song list
-  const all = useMemo(() => [...all0.filter(i => i.cat !== 'Trance & pulse'), ...all0.filter(i => i.cat === 'Trance & pulse')].filter(i => !i.song?.raw.id.startsWith('j-')), [all0])
+  const all = useMemo(() => [...all0.filter(i => i.cat !== 'Trance & pulse'), ...all0.filter(i => i.cat === 'Trance & pulse')].filter(i => !i.song || (!!i.song.raw.transcription && !i.song.raw.id.startsWith('j-') && !/Traditional/i.test(i.song.raw.artist) && !/\(reference\)|generic/i.test(i.song.raw.song))), [all0])
   const [q, setQ] = useState(''); const [cat, setCat] = useState(''); const [meter, setMeter] = useState('')
   const cats = useMemo(() => [...new Set(all.map(i => i.cat))], [all])
   const meters = useMemo(() => [...new Set(all.map(i => i.meter))].sort((a, b) => parseInt(a) - parseInt(b) || a.localeCompare(b)), [all])
