@@ -256,11 +256,11 @@ function FillPicker() {
   return <section>
     <Label>Fills</Label>
     <div className="flex gap-2">
-      <select value={P.fillId ?? ''} onChange={e => P.setFill(e.target.value || null, P.fillEvery || 4)} className="sel flex-1">
+      <select value={P.fillId ?? ''} onChange={e => P.setFill(e.target.value || null, P.fillEvery || 4)} className="sel flex-1 min-w-0 w-0 truncate">
         <option value="">No fill</option>
         {Object.entries(groups).map(([g, fs]) => <optgroup key={g} label={g}>{fs.map(f => <option key={f.pattern.id} value={f.pattern.id}>{f.pattern.name}</option>)}</optgroup>)}
       </select>
-      <select value={P.fillEvery} onChange={e => P.setFill(P.fillId, +e.target.value)} className="sel w-28" disabled={!P.fillId}>{FILL_EVERY.filter(Boolean).map(v => <option key={v} value={v}>Every {v}</option>)}</select>
+      <select value={P.fillEvery} onChange={e => P.setFill(P.fillId, +e.target.value)} className="sel w-28 shrink-0" disabled={!P.fillId}>{FILL_EVERY.filter(Boolean).map(v => <option key={v} value={v}>Every {v}</option>)}</select>
     </div>
     {P.fillId && <p className="mt-2 text-[11px] text-mute">{ALL_FILLS.find(f => f.pattern.id === P.fillId)?.description}</p>}
   </section>
@@ -282,7 +282,7 @@ function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void
             Close <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
           </button>
         </div>
-        <div className="max-h-[78vh] overflow-y-auto overscroll-contain px-4 pt-4 pb-5">{children}</div>
+        <div className="h-[min(78vh,calc(100dvh-7rem))] overflow-y-auto overscroll-contain px-4 pt-4 pb-5">{children}</div>
       </div>
     </div>
   </>
