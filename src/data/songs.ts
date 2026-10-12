@@ -13,6 +13,14 @@ export interface SongEntryRaw {
   form?: { section: string; bars: number }[]; formSource?: string; formNote?: string
   fills?: { name: string; stepsPerBar: number; bars: number; voices: Record<string, number[]> }[]
 }
+/** Map research voice names onto the app's abstract voices. Unknown names are dropped (and reported in dev). */
+export const VOICE_ALIASES: Record<string, Voice> = {
+  kick: 'low', snare: 'back', closedHat: 'tick', hihat: 'tick', openHat: 'open', pedalHat: 'pedal',
+  ride: 'ride', rideBell: 'rideBell', crash: 'crash1', crash1: 'crash1', crash2: 'crash2', china: 'china', splash: 'china',
+  tomHi: 'tomHi', tomMid: 'tomMid', tomFloor: 'tomLo', tomLo: 'tomLo', crossStick: 'accent', rim: 'accent',
+  cowbell: 'bell', shaker: 'shaker',
+}
+
 export interface SongSection { name: string; start: number; bars: number; confidence?: string; timeSig?: string }
 export interface Song { raw: SongEntryRaw & { form?: { section: string; bars: number; timeSig?: string[] }[]; category?: string; transcription?: { source: string; songId: number; revisionId: number; track: string; bars: number } }
   pattern: Pattern; fills: Fill[]; bars: Pattern[]; sections: SongSection[] }
@@ -40,12 +48,35 @@ export async function loadSongBars(song: Song): Promise<Song> {
   return song
 }
 
+const velChar = (v: number) => (v <= 0 ? '.' : String(Math.max(1, Math.min(9, Math.round(v * 9)))))
+
+export function toTracks(voices: Record<string, number[]>): Track {
+  const t: Track = {}
+  const len = Math.max(...Object.values(voices).map(a => a.length))
+  voices = Object.fromEntries(Object.entries(voices).map(([k, a]) => [k, [...a, ...Array(len - a.length).fill(0)]]))
+  for (const [k, arr] of Object.entries(voices)) {
+    const v = VOICE_ALIASES[k]; if (!v) continue
+    const s = arr.map(velChar).join('')
+    // merge if two source voices map to one app voice (keep louder)
+    t[v] = t[v] ? [...s].map((c, i) => (c > t[v]![i] && c !== '.' ? c : t[v]![i])).join('') : s
+  }
+  return t
+}
+
+/** ticks per step from time signature: bar length in 12-ticks-per-quarter units / steps per bar. */
+export function ticksPerStepFor(timeSig: string, stepsPerBar: number): number {
+  const [num, den] = timeSig.split('/').map(Number)
+  return Math.round((12 * num * 4) / den / stepsPerBar)
+}
+
+
+
 export const SONGS: Song[] = (raw as unknown as SongEntryRaw[]).map(s => {
   const tps = s.ticksPerStep ?? ticksPerStepFor(s.timeSig, s.stepsPerBar)
   const [num, den] = s.timeSig.split('/').map(Number)
   const spb = Math.max(1, Math.round(s.stepsPerBar / (den === 8 && num % 3 === 0 ? num / 3 : num)))
   const pattern: Pattern = {
-    id: `song-${s.id}`, name: s.song, steps: s.stepsPerBar * s.bars, stepsPerBeat: spb, ticksPerStep: tps,
+    id: `song-${s.id}`, name: s.song, steps: Math.max(...Object.values(s.voices).map(a => a.length)), stepsPerBeat: spb, ticksPerStep: tps,
     suggestedBpm: s.bpm, bpmNote: `${s.bpm} BPM from the song-pattern research (approximate tempo of the recording).`,
     swingable: s.stepsPerBar % 2 === 0 && s.stepsPerBar !== 12, tracks: toTracks(s.voices),
   }
@@ -56,6 +87,6 @@ export const SONGS: Song[] = (raw as unknown as SongEntryRaw[]).map(s => {
   const sections: SongSection[] = []; let start = 0
   for (const f of (s as Song['raw']).form ?? []) { sections.push({ name: f.section, start, bars: f.bars, timeSig: f.timeSig?.join(' · ') }); start += f.bars }
   const bars: Pattern[] = []
-  return { raw: s, pattern: { ...pattern, steps: s.stepsPerBar * s.bars }, fills, bars, sections }
+  return { raw: s, pattern, fills, bars, sections }
 })
 registerPatterns(SONGS.flatMap(s => [s.pattern, ...s.fills.map(f => f.pattern)]))
