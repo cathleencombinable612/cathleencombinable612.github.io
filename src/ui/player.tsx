@@ -75,10 +75,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     layers, playing, bpm, swing, kitId, section, arrangement, tuning, setTuning, fillId, fillEvery, inFill, kitProgress,
     setFill: (id, every) => { setFillId(id); if (every !== undefined) setFillEvery(every) },
     song, songBar, loopSection,
-    loadSong: async (sg, sec = 0) => {
+    loadSong: async (sg, sec) => {
       await loadSongBars(sg)
       const en = e(); en.stop(); setPlaying(false); en.setArrangement(null); setArr(null); setSection(null); setLayers([])
-      en.setSong(sg.bars); const st = sg.sections[sec]?.start ?? 0; en.jumpSong(st); setSong(sg); setSongBar(st); setLoopS(null); setSwingS(0); en.setSwing(0)
+      en.setSong(sg.bars); const st = sec === undefined ? (sg.raw.firstDrumBar ?? 0) : (sg.sections[sec]?.start ?? 0); en.jumpSong(st); setSong(sg); setSongBar(st); setLoopS(null); setSwingS(0); en.setSwing(0)
       setBpmS(sg.raw.bpm); en.setBpm(sg.raw.bpm)
     },
     jumpBar: b => { e().jumpSong(b); if (!e().playing) setSongBar(b) },
@@ -306,7 +306,6 @@ export function PlayerBar() {
           <div className="text-[14px] font-medium truncate">{title}</div>
           <div className="text-[11px] text-mute truncate">{kitLoading ? `Loading samples ${Math.round(P.kitProgress * 100)}%` : sub}</div>
         </button>
-        {sg && (sg.raw.firstDrumBar ?? 0) > 0 && P.songBar < (sg.raw.firstDrumBar ?? 0) && <button onClick={() => P.jumpBar(sg.raw.firstDrumBar!)} className="h-8 px-3 rounded-full bg-white/[0.08] text-[11px] text-bone/80 shrink-0">Skip to drums</button>}
         <button onClick={() => show('sound')} className="text-xs tabular-nums text-mute px-1 h-10">{P.bpm}</button>
         <button aria-label="Browse rhythms" onClick={() => show('browse')} className="w-10 h-10 shrink-0 grid place-items-center rounded-full bg-white/[0.08] text-xl active:scale-90">+</button>
       </div>
@@ -367,10 +366,8 @@ export function SongForm({ song }: { song?: Song }) {
   const live = P.song?.raw.id === sg.raw.id
   const cur = live ? sectionOf(sg, P.songBar) : -1
   const cur_step = useStep('song')
-  const fd = sg.raw.firstDrumBar ?? 0
   const V = useMemo(() => sg.bars.length ? variation(sg) : null, [sg, sg.bars.length])
   return <div>
-    {live && fd > 0 && P.songBar < fd && <button onClick={() => P.jumpBar(fd)} className="mb-2 h-9 px-4 rounded-full bg-white/[0.08] text-xs text-bone/80">Skip to drums ↓ bar {fd + 1}</button>}
     {live && sg.bars[P.songBar] && <StepGrid pattern={sg.bars[P.songBar]} current={P.playing ? cur_step : -1} />}
     <ol className="mt-3 divide-y divide-line">{sg.sections.map((s, i) => {
       const on = i === cur; const pct = on ? ((P.songBar - s.start + 1) / s.bars) * 100 : 0
