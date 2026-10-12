@@ -86,7 +86,7 @@ function RequestSong() {
   return <form onSubmit={submit} className="mb-10">
     <input type="text" name="_honey" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e => setHp(e.target.value)} className="hidden" />
     <div className="flex gap-2">
-      <input className="flex-1 min-w-0 h-10 px-3 rounded-xl bg-white/[0.05] border border-white/[0.06] text-sm placeholder:text-mute outline-none focus:border-amber/60" placeholder="Request a song, e.g. Schism by Tool" aria-label="Request a song" value={text} onChange={e => { setText(e.target.value); setState('idle') }} />
+      <input className="flex-1 min-w-0 h-10 px-3 rounded-xl bg-white/[0.05] border border-white/[0.06] text-sm placeholder:text-mute outline-none focus:border-amber/60" placeholder="Request a song" aria-label="Request a song" value={text} onChange={e => { setText(e.target.value); setState('idle') }} />
       <button disabled={!text.trim() || state === 'sending'} className="h-10 px-4 rounded-xl bg-amber text-ink text-sm font-medium disabled:opacity-30">{state === 'sending' ? '…' : 'Send'}</button>
     </div>
     {state === 'sent' && <p className="mt-1.5 text-[11px] text-amber">Thanks, request sent.</p>}
@@ -95,18 +95,16 @@ function RequestSong() {
 }
 
 function Songs() {
-  const [group, setGroup] = useState<'all' | 'songs' | 'virtuoso'>('all')
   // artist groups shuffled on each visit; songs inside a group keep their order
   const list = useMemo(() => {
     const groups = new Map<string, typeof SONGS>()
-    for (const s of SONGS.filter(x => group === 'all' || (group === 'virtuoso') === (x.raw.category === 'Virtuoso'))) { const k = s.raw.artist; if (!groups.has(k)) groups.set(k, []); groups.get(k)!.push(s) }
+    for (const s of SONGS) { const k = s.raw.artist; if (!groups.has(k)) groups.set(k, []); groups.get(k)!.push(s) }
     const g = [...groups.values()]
     for (let i = g.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [g[i], g[j]] = [g[j], g[i]] }
     return g.flat()
-  }, [group])
+  }, [])
   return <div className="rise">
     <RequestSong />
-    <div className="mb-8 flex gap-1.5 text-xs">{([['all', 'All'], ['songs', 'Rock & pop'], ['virtuoso', 'Virtuoso']] as const).map(([v, l]) => <button key={v} onClick={() => setGroup(v)} className={`h-8 px-3.5 rounded-full ${group === v ? 'bg-bone text-ink' : 'bg-white/[0.05] text-bone/60'}`}>{l}</button>)}</div>
     <Note className="mb-8" line="Simplified drum-part transcriptions, for learning." more="Approximate transcriptions of each drum part, simplified for learning. Drum part only: no audio or lyrics. Tempos and song forms are approximate. Details on the About page." />
     {list.map(s => <article key={s.raw.id} className="mb-10 pb-10 border-b border-line last:border-0">
       <div className="flex items-baseline justify-between gap-3"><h2 className="text-xl font-medium tracking-tight">{s.raw.song}</h2><span className="text-xs text-mute tabular-nums shrink-0">{s.raw.timeSig}</span></div>

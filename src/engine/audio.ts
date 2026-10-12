@@ -58,7 +58,8 @@ function makeInst(kv: KitVoice, out: Tone.ToneAudioNode): Inst {
       const lo = li ? layers[li - 1].vel : 0
       const rel = (v - lo) / Math.max(0.01, layers[li].vel - lo) // position within layer
       const src = new Tone.ToneBufferSource(buf).connect(g)
-      if (kv.rate || r !== 1) src.playbackRate.value = (kv.rate ?? 1) * r
+      const wob = 1 + ((rr[li] * 0.61803) % 1 - 0.5) * 0.016 // ±0.8% pitch per stroke
+      src.playbackRate.value = (kv.rate ?? 1) * r * wob
       src.onended = () => { live.delete(src); src.dispose() }
       live.add(src)
       src.start(t, 0, undefined, 0.55 + 0.45 * Math.min(1, rel))
@@ -71,6 +72,11 @@ function makeInst(kv: KitVoice, out: Tone.ToneAudioNode): Inst {
 interface Channel { gain: Tone.Gain; insts: Partial<Record<Voice, Inst>> }
 export type StepListener = (layerSteps: Record<string, number>, bar: number) => void
 const FILL_ID = 'fill', FX_ID = 'fx', SONG_ID = 'song'
+/** Inner roll strokes (between grid steps) are played softer than the stroke on the step, like real sticking:
+ *  the middle of a 32nd pair a bit firmer than triplet inner strokes. */
+const rollVel = (v: number, frac: number) => Math.min(1, v * (Math.abs(frac - 0.5) < 0.01 ? 0.8 : 0.72))
+/** Deterministic ±2 ms drift on inner roll strokes so rolls aren't machine-perfect. */
+const rollJitter = (bar: number, step: number, frac: number) => { const x = Math.sin((bar * 131 + step * 17 + frac * 7) * 12.9898) * 43758.5453; return ((x - Math.floor(x)) * 2 - 1) * 0.002 }
 /** Visual hit bus: Kit view subscribes; callbacks fire via Tone.Draw at the hit's audio time. */
 export const hitBus = new Set<(voice: Voice, vel: number, variant?: string) => void>()
 
@@ -114,7 +120,7 @@ export class RhythmEngine {
       let t = time + swingOffset(p, step, this.swing) * stepSec
       if (p.humanize) { const r = Math.sin((this.songBar * 97 + step) * 12.9898) * 43758.5453; t += (p.humanize.lateMs + ((r - Math.floor(r)) * 2 - 1) * p.humanize.jitterMs) / 1000 }
       for (const h of hitsAt(p, step)) this.play(SONG_ID, h.voice, t, h.velocity, h.graces, stepSec, p.variant?.[h.voice]?.[step])
-      for (const h of subHitsAt(p, step)) this.play(SONG_ID, h.voice, t + h.frac * stepSec, h.velocity, 0, stepSec)
+      for (const h of subHitsAt(p, step)) this.play(SONG_ID, h.voice, t + h.frac * stepSec + rollJitter(this.songBar, step, h.frac), rollVel(h.velocity, h.frac), 0, stepSec)
       const b = this.songBar; Tone.getDraw().schedule(() => this.listeners.forEach(f => f({ [SONG_ID]: step }, b)), time)
     }
     if (++this.songTick >= len) {
@@ -175,7 +181,7 @@ export class RhythmEngine {
     const inst = this.inst(channelId, voice); if (!inst) return
     if (hitBus.size) { const v0 = voice, vv = vel; Tone.getDraw().schedule(() => hitBus.forEach(f => f(v0, vv, variant)), t) }
     if (voice === 'tick' || voice === 'pedal') this.channels.get(channelId)?.insts.open?.choke?.(t)
-    const g = Math.max(0.02, Math.min(0.028, stepSec / 2)) // flam/drag grace spacing: ~28 ms, never past half a step
+    const g = Math.max(0.025, Math.min(0.03, stepSec / 2)) // flam/drag grace spacing: 25-30 ms
     for (let i = graces; i > 0; i--) inst.trigger(Math.max(0, t - g * i), vel * 0.35)
     inst.trigger(t, vel, vr?.rate ?? 1)
   }
@@ -223,7 +229,7 @@ export class RhythmEngine {
         const stepSec = tickSec * ticksPerStep(s.pattern)
         const t = time + swingOffset(s.pattern, step, this.swing) * stepSec
         for (const h of hitsAt(s.pattern, step)) this.play(s.id, h.voice, t, h.velocity, h.graces, stepSec)
-        for (const h of subHitsAt(s.pattern, step)) this.play(s.id, h.voice, t + h.frac * stepSec, h.velocity, 0, stepSec)
+        for (const h of subHitsAt(s.pattern, step)) this.play(s.id, h.voice, t + h.frac * stepSec + rollJitter(this.bar, step, h.frac), rollVel(h.velocity, h.frac), 0, stepSec)
       }
       if (!fillBar) for (const l of this.layers) if (steps[l.id] === undefined) { const s = stepForTick(l.pattern, this.tick); if (s !== null) steps[l.id] = s }
       if (Object.keys(steps).length) { const bar = this.bar; Tone.getDraw().schedule(() => this.listeners.forEach(f => f(steps, bar)), time) }

@@ -81,3 +81,6 @@ export const KITS: Kit[] = [
     ride: { kind: 'metal', pitch: 420, tone: 5.1, decay: 0.5, gain: 0.12 },
     shaker: { kind: 'noise', tone: 9000, decay: 0.05, gain: 0.25 } }) },
 ]
+
+// Rim / cross-stick sits about 3 dB lower in every kit (×0.708).
+for (const k of KITS) { const a = k.voices.accent; if (a) { a.gain = (a.gain ?? 1) * 0.708; if (a.fallback) a.fallback.gain = (a.fallback.gain ?? 1) * 0.708 } }

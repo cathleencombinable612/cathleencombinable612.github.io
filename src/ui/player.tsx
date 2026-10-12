@@ -282,13 +282,14 @@ function Sheet({ open, onClose, children, title, subtitle, head }: { open: boole
       if ((scroller.current?.scrollTop ?? 0) <= 0 && delta > 6) { d.active = true; d.y = y } else return
     }
     if (e?.cancelable) e.preventDefault()
-    d.lastT = performance.now(); d.lastY = y
+    d.t = d.lastT; d.lastT = performance.now(); (d as { prevY?: number }).prevY = d.lastY; d.lastY = y
     setDy(Math.max(0, y - d.y))
   }
   const end = () => {
     const d = drag.current; drag.current = null; if (!d || !d.active) { setDy(0); return }
-    const v = (d.lastY - d.y) / Math.max(1, d.lastT - d.t) // px/ms
-    if (dy > 40 || v > 0.35) onClose()
+    const v = (d.lastY - ((d as { prevY?: number }).prevY ?? d.lastY)) / Math.max(1, d.lastT - d.t) // px/ms over the last move
+    const dist = d.lastY - d.y
+    if (dist > 32 || (dist > 10 && v > 0.2)) onClose()
     setDy(0)
   }
   // non-passive touchmove on the content so a pull-down at scrollTop 0 can stop native overscroll

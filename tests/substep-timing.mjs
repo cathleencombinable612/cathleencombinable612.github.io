@@ -14,7 +14,7 @@ for (const [id, sec] of songs) {
   const exp = []; let t = 0
   s.bars.slice(0, 3).forEach((bar, i) => {
     const stepSec = s.ticksPerStep[i] * 60 / s.bpm[i] / 12; const n = Object.values(bar).find(v => typeof v === 'string').length
-    for (const [k, str] of Object.entries(bar)) if (k !== '_sub') [...str].forEach((c, st) => { if (c !== '.' && A[k]) exp.push({ v: A[k], t: t + st * stepSec }) })
+    for (const [k, str] of Object.entries(bar)) if (!k.startsWith('_')) [...str].forEach((c, st) => { if (c !== '.' && A[k]) exp.push({ v: A[k], t: t + st * stepSec }) })
     for (const [k, m] of Object.entries(bar._sub ?? {})) for (const [st, l] of Object.entries(m)) for (const [fr] of l) if (A[k]) exp.push({ v: A[k], t: t + (+st + fr) * stepSec })
     t += n * stepSec
   })
@@ -23,7 +23,7 @@ for (const [id, sec] of songs) {
   const t0 = r[0]?.t ?? 0, firstExp = Math.min(...exp.map(x => x.t))
   const got = r.filter(x => x.t - t0 < t - firstExp - 1e-6).map(x => ({ v: x.voice, t: x.t - t0 + firstExp })).filter(x => !x.v.startsWith('crash') || true)
   let maxErr = 0, unmatched = 0
-  for (const e of exp) { const m = got.filter(g => g.v === e.v).reduce((a, g) => Math.min(a, Math.abs(g.t - e.t)), 9); if (m > 0.0005 + hum) unmatched++; else maxErr = Math.max(maxErr, m) }
+  for (const e of exp) { const m = got.filter(g => g.v === e.v).reduce((a, g) => Math.min(a, Math.abs(g.t - e.t)), 9); if (m > 0.0025 + hum) unmatched++; else maxErr = Math.max(maxErr, m) }
   const ints = [...new Set(got.map(g => g.t))].sort((a, b) => a - b).slice(1).map((x, i, arr) => x - (i ? arr[i - 1] : got[0].t))
   console.log(`${id} [${s.name}]: expected ${exp.length}, scheduled ${got.length}, max timing error ${(maxErr * 1000).toFixed(3)} ms, unmatched ${unmatched}, smallest intervals ${[...new Set(ints.map(x => Math.round(x * 1000)))].sort((a, b) => a - b).slice(0, 4).join(', ')} ms`)
   if (unmatched) fail++
