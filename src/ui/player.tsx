@@ -266,23 +266,58 @@ function FillPicker() {
   </section>
 }
 
-/** Bottom sheet: grab handle, close button, swipe down or tap outside to close. */
-function Sheet({ open, onClose, children, title, subtitle }: { open: boolean; onClose: () => void; children: ReactNode; title?: string; subtitle?: string }) {
-  const [dy, setDy] = useState(0); const y0 = useRef<number | null>(null); const dyR = useRef(0)
+/** Bottom sheet. Drag anywhere on the header (handle, title, tabs) or pull down on content that is scrolled to the top:
+ *  the sheet follows the finger and closes past 40 px or on a quick flick. Close button, tap outside and Esc also close. */
+function Sheet({ open, onClose, children, title, subtitle, head }: { open: boolean; onClose: () => void; children: ReactNode; title?: string; subtitle?: string; head?: ReactNode }) {
+  const [dy, setDy] = useState(0); const drag = useRef<{ y: number; t: number; lastY: number; lastT: number; active: boolean; fromContent: boolean } | null>(null)
+  const scroller = useRef<HTMLDivElement>(null)
   useEffect(() => { if (!open) setDy(0) }, [open])
   useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }; addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [onClose])
+  const start = (y: number, fromContent: boolean) => { drag.current = { y, t: performance.now(), lastY: y, lastT: performance.now(), active: !fromContent, fromContent } }
+  const move = (y: number, e?: { cancelable: boolean; preventDefault: () => void }) => {
+    const d = drag.current; if (!d) return
+    const delta = y - d.y
+    if (d.fromContent && !d.active) {
+      // content drag only takes over when scrolled to the top and moving down
+      if ((scroller.current?.scrollTop ?? 0) <= 0 && delta > 6) { d.active = true; d.y = y } else return
+    }
+    if (e?.cancelable) e.preventDefault()
+    d.lastT = performance.now(); d.lastY = y
+    setDy(Math.max(0, y - d.y))
+  }
+  const end = () => {
+    const d = drag.current; drag.current = null; if (!d || !d.active) { setDy(0); return }
+    const v = (d.lastY - d.y) / Math.max(1, d.lastT - d.t) // px/ms
+    if (dy > 40 || v > 0.35) onClose()
+    setDy(0)
+  }
+  // non-passive touchmove on the content so a pull-down at scrollTop 0 can stop native overscroll
+  useEffect(() => {
+    const el = scroller.current; if (!el) return
+    const ts = (e: TouchEvent) => start(e.touches[0].clientY, true)
+    const tm = (e: TouchEvent) => move(e.touches[0].clientY, e)
+    const te = () => end()
+    el.addEventListener('touchstart', ts, { passive: true }); el.addEventListener('touchmove', tm, { passive: false }); el.addEventListener('touchend', te); el.addEventListener('touchcancel', te)
+    return () => { el.removeEventListener('touchstart', ts); el.removeEventListener('touchmove', tm); el.removeEventListener('touchend', te); el.removeEventListener('touchcancel', te) }
+  })
+  const dragging = dy > 0
   return <>
-    <div onClick={onClose} className={`fixed inset-0 z-40 bg-black/55 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
-    <div role="dialog" aria-modal="true" aria-hidden={!open} className={`fixed inset-x-0 bottom-0 z-50 transition-transform ${y0.current === null ? 'duration-300 ease-out' : 'duration-0'} ${open ? '' : 'translate-y-full'}`} style={open && dy ? { transform: `translateY(${dy}px)` } : undefined}>
+    <div onClick={onClose} className={`fixed inset-0 z-40 bg-black/55 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} style={open && dy ? { opacity: Math.max(0.2, 1 - dy / 400) } : undefined} />
+    <div role="dialog" aria-modal="true" aria-hidden={!open} className={`fixed inset-x-0 bottom-0 z-50 ${dragging ? '' : 'transition-transform duration-300 ease-out'} ${open ? '' : 'translate-y-full'}`} style={open && dy ? { transform: `translateY(${dy}px)` } : undefined}>
       <div className="max-w-xl mx-auto rounded-t-[24px] bg-[#141416] border-t border-white/[0.08] shadow-2xl shadow-black pb-[env(safe-area-inset-bottom)]">
-        <div className="sticky top-0 z-10 flex items-center h-14 pl-4 pr-1 border-b border-white/[0.06] touch-none cursor-grab rounded-t-[24px] bg-[#141416]" onTouchStart={e => { y0.current = e.touches[0].clientY }} onTouchMove={e => { if (y0.current !== null) { dyR.current = Math.max(0, e.touches[0].clientY - y0.current); setDy(dyR.current) } }} onTouchEnd={() => { if (dyR.current > 70) onClose(); y0.current = null; dyR.current = 0; setDy(0) }}>
-          <span className="absolute left-1/2 top-2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-white/30" />
-          <div className="min-w-0 pr-2"><div className="text-[14px] font-medium truncate">{title || 'Player'}</div>{subtitle && <div className="text-[11px] text-mute truncate">{subtitle}</div>}</div>
-          <button aria-label="Close player" onClick={onClose} className="ml-auto h-12 pl-4 pr-3 flex items-center gap-1.5 rounded-full text-sm text-bone/85 active:scale-95">
-            Close <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
-          </button>
+        <div className="touch-none select-none cursor-grab rounded-t-[24px] border-b border-white/[0.06]"
+          onTouchStart={e => start(e.touches[0].clientY, false)} onTouchMove={e => move(e.touches[0].clientY)} onTouchEnd={end} onTouchCancel={end}
+          onPointerDown={e => { if (e.pointerType === 'mouse' && !(e.target as HTMLElement).closest('button')) { start(e.clientY, false); const mm = (ev: PointerEvent) => move(ev.clientY); const mu = () => { end(); removeEventListener('pointermove', mm); removeEventListener('pointerup', mu) }; addEventListener('pointermove', mm); addEventListener('pointerup', mu) } }}>
+          <div className="relative flex items-center h-14 pl-4 pr-1">
+            <span className="absolute left-1/2 top-2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-white/30" />
+            <div className="min-w-0 pr-2"><div className="text-[14px] font-medium truncate">{title || 'Player'}</div>{subtitle && <div className="text-[11px] text-mute truncate">{subtitle}</div>}</div>
+            <button aria-label="Close player" onClick={onClose} className="ml-auto h-12 pl-4 pr-3 flex items-center gap-1.5 rounded-full text-sm text-bone/85 active:scale-95 shrink-0">
+              Close <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+          </div>
+          {head && <div className="px-4 pb-3">{head}</div>}
         </div>
-        <div className="h-[min(78vh,calc(100dvh-7rem))] overflow-y-auto overscroll-contain px-4 pt-4 pb-5">{children}</div>
+        <div ref={scroller} className="h-[min(72vh,calc(100dvh-10rem))] overflow-y-auto overscroll-contain px-4 pt-4 pb-5">{children}</div>
       </div>
     </div>
   </>
@@ -314,8 +349,8 @@ export function PlayerBar() {
         <button aria-label="Browse rhythms" onClick={() => show(sg ? 'now' : 'browse')} className="w-10 h-10 shrink-0 grid place-items-center rounded-full bg-white/[0.08] text-xl active:scale-90">{sg ? '⌃' : '+'}</button>
       </div>
     </div></div>
-    <Sheet open={open} onClose={() => setOpen(false)} title={sg ? sg.raw.song : title} subtitle={sg ? `${sg.raw.artist} · ${sg.raw.drummer}` : undefined}>
-      <div className="mb-4"><Segmented value={tab} onChange={setTab} options={[{ v: 'now', l: 'Now playing' }, { v: 'kit', l: 'Kit view' }, ...(sg ? [] : [{ v: 'browse' as const, l: 'Browse' }]), { v: 'sound', l: 'Sound' }]} /></div>
+    <Sheet open={open} onClose={() => setOpen(false)} title={sg ? sg.raw.song : title} subtitle={sg ? `${sg.raw.artist} · ${sg.raw.drummer}` : undefined}
+      head={<Segmented value={tab} onChange={setTab} options={[{ v: 'now', l: 'Now playing' }, { v: 'kit', l: 'Kit view' }, ...(sg ? [] : [{ v: 'browse' as const, l: 'Browse' }]), { v: 'sound', l: 'Sound' }]} />}>
       {tab === 'now' && <div className="space-y-3">
         {sg && <SongForm />}
         {sg?.raw.tuning && <p className="text-[11px] text-mute">Tuning ({sg.raw.tuning.status}): {sg.raw.tuning.note}</p>}

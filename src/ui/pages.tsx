@@ -20,14 +20,14 @@ import { PITCHED, noteName, midiToHz } from '../engine/pitch'
 import { TUNING_PRESETS, PITCH_TEXT, PITCH_PATTERNS } from '../data/pitch'
 import { LoadButtons, usePlayer, StepGrid, SongForm } from './player'
 
-const H1 = ({ t, sub }: { t: string; sub: string }) => <header className="mb-14 rise"><h1 className="text-[34px] leading-[1.1] font-semibold tracking-[-0.025em]">{t}</h1><p className="mt-4 text-[17px] text-bone/60 leading-relaxed max-w-[34ch]">{sub}</p></header>
+const H1 = ({ t, sub, center }: { t: string; sub: string; center?: boolean }) => <header className={`mb-14 rise ${center ? 'text-center' : ''}`}><h1 className="text-[34px] leading-[1.1] font-semibold tracking-[-0.025em]">{t}</h1><p className={`mt-4 text-[17px] text-bone/60 leading-relaxed max-w-[34ch] ${center ? 'mx-auto' : ''}`}>{sub}</p></header>
 const Tag = ({ c }: { c: string }) => <span className="eyebrow">{c}</span>
 
 export function Library() {
   const [tab, setTab] = useState<'styles' | 'songs'>('songs')
   return <>
-    <H1 t="Rhythm library" sub="Grooves from many styles and songs, each with notes on how it feels and why. Play one, then add layers." />
-    <div className="mb-12 inline-flex p-0.5 rounded-full bg-white/[0.05]">{(['songs', 'styles'] as const).map(t => <button key={t} onClick={() => setTab(t)} className={`h-9 px-5 rounded-full text-sm capitalize transition-all duration-200 ${tab === t ? 'bg-bone text-ink' : 'text-bone/60'}`}>{t === 'songs' ? `Songs · ${SONGS.length}` : `Styles · ${RHYTHMS.length}`}</button>)}</div>
+    <H1 center t="Rhythm library" sub="Grooves from many styles and songs, each with notes on how it feels and why. Play one, then add layers." />
+    <div className="mb-12 flex justify-center"><div className="inline-flex p-0.5 rounded-full bg-white/[0.05]">{(['songs', 'styles'] as const).map(t => <button key={t} onClick={() => setTab(t)} className={`h-9 px-5 rounded-full text-sm capitalize transition-all duration-200 ${tab === t ? 'bg-bone text-ink' : 'text-bone/60'}`}>{t === 'songs' ? `Songs · ${SONGS.length}` : `Styles · ${RHYTHMS.length}`}</button>)}</div></div>
     {tab === 'styles' ? <Styles /> : <Songs />}
   </>
 }
@@ -36,7 +36,12 @@ function Styles() {
   const fams0 = [...new Set(RHYTHMS.map(r => r.family))]
   // Trance & pulse (theta pulse, Harner tempo, rattle drone) used to open the page; it now sits at the end.
   const fams = [...fams0.filter(f => f !== 'Trance & pulse'), ...fams0.filter(f => f === 'Trance & pulse')]
-  return <>{fams.map(f => <section key={f} className="mb-16 rise"><Tag c={f} />
+  const [fam, setFam] = useState(fams[0])
+  return <>
+    <div className="-mx-6 px-6 mb-8 flex gap-x-5 overflow-x-auto whitespace-nowrap [scrollbar-width:none]" role="tablist" aria-label="Genres">
+      {fams.map(f => <button key={f} role="tab" aria-selected={fam === f} onClick={() => setFam(f)} className={`py-1 text-lg shrink-0 ${fam === f ? 'text-amber' : 'text-bone/80'}`}>{f}</button>)}
+    </div>
+    {fams.filter(f => f === fam).map(f => <section key={f} className="mb-16 rise">
       {RHYTHMS.filter(r => r.family === f).map(r => <article key={r.pattern.id} className="mt-6 pb-10 border-b border-line last:border-0">
         <h2 className="text-xl font-medium tracking-tight">{r.pattern.name}</h2>
         <p className="mt-2.5 text-bone/80 leading-relaxed">{r.effect}</p>
@@ -66,10 +71,13 @@ function RequestSong() {
     if (hp) { setState('sent'); return } // honeypot filled: a bot, drop silently
     setState('sending')
     try {
-      const r = await fetch('https://formsubmit.co/ajax/ace7abe81ae4d20d81a3316d83cc196d', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ _subject: `Pulse song request: ${t}`, _captcha: 'false', request: t }),
-      })
+      // Web3Forms (no activation click) once an access key for pulse-requests@mail.grokbot.com is set; FormSubmit until then.
+      const w3 = import.meta.env.VITE_WEB3FORMS_KEY as string | undefined
+      const r = w3
+        ? await fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ access_key: w3, subject: `Pulse song request: ${t}`, from_name: 'Pulse', request: t, botcheck: '' }) })
+        : await fetch('https://formsubmit.co/ajax/ace7abe81ae4d20d81a3316d83cc196d', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ _subject: `Pulse song request: ${t}`, _captcha: 'false', request: t }) })
       const j = await r.json().catch(() => ({})) as { success?: string | boolean }
       if (!r.ok || String(j.success) === 'false') throw new Error(String(r.status))
       setState('sent'); setText('')
