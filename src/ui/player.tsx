@@ -204,7 +204,7 @@ export function PlayerBar() {
   const sg = P.song; const si = sg ? sectionOf(sg, P.songBar) : 0
   const title = sg ? sg.raw.song : P.arrangement ? P.arrangement.name : P.layers.length ? P.layers.map(l => l.pattern.name).join(' + ') : 'Choose a rhythm'
   const sub = sg ? `${sg.sections[si].name} · bar ${P.songBar - sg.sections[si].start + 1}/${sg.sections[si].bars}${P.loopSection !== null ? ' · looping' : ''}` : P.arrangement && P.section !== null ? P.arrangement.sections[P.section].name : P.inFill ? 'Fill' : `${KITS.find(k => k.id === P.kitId)!.name}`
-  const kitLoading = P.kitId === 'acoustic' && P.kitProgress < 1 && P.playing
+  const kitLoading = P.kitProgress < 1 && P.playing && KITS.find(k => k.id === P.kitId)!.voices.low.kind === 'sample'
   return (
     <>
       <div onClick={() => setOpen(false)} className={`fixed inset-0 bg-black/50 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
@@ -231,7 +231,7 @@ export function PlayerBar() {
                   <section>
                     <Label>Kit</Label>
                     <div className="flex flex-wrap gap-2">{KITS.map(k => <button key={k.id} onClick={() => P.setKit(k.id)} className={`chip ${P.kitId === k.id ? 'chip-on' : ''}`}>{k.name}</button>)}</div>
-                    {P.kitId === 'acoustic' && P.kitProgress > 0 && P.kitProgress < 1 && <div className="mt-2 h-0.5 rounded bg-white/10 overflow-hidden"><div className="h-full bg-amber transition-[width] duration-200" style={{ width: `${P.kitProgress * 100}%` }} /></div>}
+                    {P.kitProgress > 0 && P.kitProgress < 1 && <div className="mt-2 h-0.5 rounded bg-white/10 overflow-hidden"><div className="h-full bg-amber transition-[width] duration-200" style={{ width: `${P.kitProgress * 100}%` }} /></div>}
                   </section>
                   <section>
                     <div className="flex items-center justify-between mb-2"><Label className="mb-0">Fill</Label>
