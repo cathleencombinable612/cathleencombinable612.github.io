@@ -1,0 +1,27 @@
+name: Song request webhook
+on:
+  issues:
+    types: [opened, labeled]
+permissions:
+  contents: read
+jobs:
+  notify:
+    # opened: label present, or the app's title prefix (labels from the URL are dropped for non-collaborators).
+    # labeled: only a later labeling, so an issue opened with the label isn't posted twice.
+    if: >-
+      (github.event.action == 'opened' && (contains(github.event.issue.labels.*.name, 'song-request') || startsWith(github.event.issue.title, 'Song request:'))) ||
+      (github.event.action == 'labeled' && github.event.label.name == 'song-request' && github.event.issue.created_at != github.event.issue.updated_at && !startsWith(github.event.issue.title, 'Song request:'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST issue to webhook
+        env:
+          URL: ${{ secrets.PULSE_WEBHOOK_URL }}
+          KEY: ${{ secrets.PULSE_WEBHOOK_KEY }}
+          TITLE: ${{ github.event.issue.title }}
+          BODY: ${{ github.event.issue.body }}
+          NUMBER: ${{ github.event.issue.number }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then echo "PULSE_WEBHOOK_URL / PULSE_WEBHOOK_KEY not set; skipping."; exit 0; fi
+          payload=$(jq -n --arg title "$TITLE" --arg body "$BODY" --argjson number "$NUMBER" --arg url "$ISSUE_URL" '{title:$title, body:$body, number:$number, url:$url}')
+          curl -fsS -X POST "$URL" -H "Content-Type: application/json" -H "Authorization: Bearer $KEY" --data "$payload"

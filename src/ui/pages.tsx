@@ -51,8 +51,26 @@ function SongButtons({ song }: { song: Song }) {
   </div>
 }
 
+function RequestSong() {
+  const [song, setSong] = useState(''); const [artist, setArtist] = useState(''); const [note, setNote] = useState('')
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault(); if (!song.trim() || !artist.trim()) return
+    const title = `Song request: ${song.trim()} — ${artist.trim()}`
+    const body = `**Song:** ${song.trim()}\n**Artist:** ${artist.trim()}${note.trim() ? `\n\n**Note:** ${note.trim()}` : ''}\n\n_Sent from Pulse._`
+    window.open(`https://github.com/nmpy7knjd8-code/rhythm/issues/new?labels=song-request&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`, '_blank', 'noopener')
+  }
+  const f = 'h-10 px-3 rounded-xl bg-white/[0.05] border border-white/[0.06] text-sm placeholder:text-mute outline-none focus:border-amber/60'
+  return <form onSubmit={submit} className="mb-10 space-y-2">
+    <p className="text-xs uppercase tracking-wider text-mute">Request a song</p>
+    <div className="grid grid-cols-2 gap-2"><input className={f} placeholder="Song" value={song} onChange={e => setSong(e.target.value)} required /><input className={f} placeholder="Artist" value={artist} onChange={e => setArtist(e.target.value)} required /></div>
+    <div className="flex gap-2"><input className={`${f} flex-1 min-w-0`} placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} /><button disabled={!song.trim() || !artist.trim()} className="h-10 px-4 rounded-xl bg-amber text-ink text-sm font-medium disabled:opacity-30">Send</button></div>
+    <p className="text-[11px] text-mute">Opens a prefilled GitHub issue.</p>
+  </form>
+}
+
 function Songs() {
   return <div className="rise">
+    <RequestSong />
     <Note className="mb-8" line="Simplified drum-part transcriptions, for learning." more="Approximate transcriptions of each drum part, simplified for learning. Drum part only: no audio or lyrics. Tempos and song forms are approximate. Details on the About page." />
     {SONGS.map(s => <article key={s.raw.id} className="mb-10 pb-10 border-b border-line last:border-0">
       <div className="flex items-baseline justify-between gap-3"><h2 className="text-xl font-medium tracking-tight">{s.raw.song}</h2><span className="text-xs text-mute tabular-nums shrink-0">{s.raw.timeSig}</span></div>
