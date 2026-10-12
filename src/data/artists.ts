@@ -6,7 +6,7 @@ export interface ArtistLens {
   technique: string[]; feeling: string; storytelling: string
   tryThis: { pattern: Pattern; note: string }[]
 }
-const P = (id: string, name: string, steps: number, spb: number, bpm: number, tracks: Pattern['tracks'], swingable = false): Pattern => ({ id, name, steps, stepsPerBeat: spb, suggestedBpm: bpm, tracks, swingable })
+const P = (id: string, name: string, steps: number, spb: number, bpm: number, tracks: Pattern['tracks'], swingable = false, ticksPerStep?: number): Pattern => ({ id, name, steps, stepsPerBeat: spb, suggestedBpm: bpm, tracks, swingable, ticksPerStep })
 
 export const ARTISTS: ArtistLens[] = [
   { id: 'peart', name: 'Neil Peart', band: 'Rush', era: '1974–2015',
@@ -43,5 +43,17 @@ export const ARTISTS: ArtistLens[] = [
     tryThis: [
       { pattern: P('allen-afrobeat', 'Afrobeat interlock (approximation)', 16, 4, 108, { tick: 'x.xxx.xxx.xxx.xx', open: '..x...x...x...x.', low: 'X.....X.x.......', back: '....x..g.g..X.g.', tomLo: '............x..x' }, true), note: 'Mute each voice in turn: each limb is a separate line.' },
       { pattern: P('allen-shaker', 'Shekere-style layer', 16, 4, 108, { shaker: 'x.Xx.xX.x.Xx.xX.' }), note: 'Layer on top with the Latin kit to hear the percussion section.' } ] },
+  { id: 'carey', name: 'Danny Carey', band: 'Tool', era: '1990–present',
+    technique: [
+      'Melodic tom work: a large kit with many toms, tuned so fills and ostinatos work as melodic lines. He also plays pitched electronic pads alongside the acoustic drums.',
+      'Odd meters and polymeter: Tool songs often move through 5/4, 7/8 and mixed groupings, and Carey layers figures of one length over another. "Schism" is a frequently cited example of shifting meters.',
+      '"Lateralus" and the Fibonacci sequence: the band has discussed building the song on Fibonacci numbers. The vocal syllable counts follow the sequence, and the chorus is often described as moving through 9/8, 8/8 and 7/8 (987 is a Fibonacci number). Treat bar-by-bar analyses online as fan transcriptions, not band-confirmed scores.',
+      'Tabla influence: he has studied Indian rhythm (he has cited tabla teacher Aloke Dutta), which shows in his phrasing and in tabla sounds and cyclic, tala-like groupings in his parts.',
+      'Electronics: from early Simmons pads to the Mandala pads he has long used, triggering samples including pitched and tabla-like sounds, so a single strike can play a specific note.' ],
+    feeling: 'Ritual, hypnotic weight. Long, patient ostinatos that build trance-like intensity, with sudden, precise eruptions.',
+    storytelling: 'Parts evolve across long songs. A tom ostinato appears, gets re-grouped against the meter, thickens, and finally resolves when the cycles realign. Melodic tom lines often shadow the bass or guitar riff, so the drums carry harmony as well as time.',
+    tryThis: [
+      { pattern: P('carey-78', 'Melodic tom ostinato in 7/8 (2+2+3)', 14, 14, 112, { low: 'X...X...X.....', tomLo: '..x...x...x.x.', tomHi: '.x...x...x.x.x', back: '......X.......', tick: 'x.x.x.x.x.x.x.' }, false, 3), note: 'Load the Tuned toms kit and a preset on Kit as Pitch first, so the toms sing a phrase. An illustration of the approach, not a transcription.' },
+      { pattern: P('carey-987', '9+8+7 phrase (Lateralus-style)', 24, 24, 150, { low: 'X........X.......X......', tomLo: '...x..x.....x..x....x.x.', tomHi: '.x..x..x.x..x..x.x..x...', accent: 'X........X.......X......' }, false, 6), note: 'Three bars of 9/8, 8/8 and 7/8 in eighths. Accents mark each bar line, so the phrase gets shorter as it goes.' } ] },
 ]
 registerPatterns(ARTISTS.flatMap(a => a.tryThis.map(t => t.pattern)))

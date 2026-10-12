@@ -5,9 +5,9 @@ import { registerPatterns } from './rhythms'
 export type Strength = 'strong' | 'moderate' | 'weak' | 'romanticized'
 export interface Culture { id: string; culture: string; instrument: string; practice: string; rhythm: string; groupEvidence: string; evidenceStrength: Strength; sources: string[]; flags: string[] }
 
-/** Research data (sources still being verified). Replace cultures.json to update. */
+/** Research data. Replace cultures.json to update. */
 export const CULTURES = (raw as { entries: Culture[] }).entries
-export const SOURCES_VERIFIED = false
+export const SOURCES_VERIFIED = (raw as { verified?: string }).verified ?? ''
 
 export const WORDING_NOTES = [
   'There is no evidence of shared or group trance in Nordic practice. Sami trance was individual (the noaidi), with an audience present.',

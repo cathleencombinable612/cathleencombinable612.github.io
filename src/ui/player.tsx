@@ -3,6 +3,7 @@ import { RhythmEngine } from '../engine/audio'
 import type { Arrangement, Layer, Pattern } from '../engine/types'
 import { KITS } from '../data/kits'
 import { PATTERNS } from '../data/rhythms'
+import { applyTuning, type Tuning } from '../engine/pitch'
 
 interface Ctx {
   layers: Layer[]; playing: boolean; bpm: number; swing: number; kitId: string; section: number | null; arrangement: Arrangement | null
@@ -10,6 +11,7 @@ interface Ctx {
   loadArrangement: (a: Arrangement) => void
   update: (id: string, patch: Partial<Layer>) => void
   remove: (id: string) => void
+  tuning: Tuning; setTuning: (t: Tuning) => void
   toggle: () => void; setBpm: (n: number) => void; setSwing: (n: number) => void; setKit: (id: string) => void
   subscribe: RhythmEngine['subscribe']
 }
@@ -26,6 +28,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [kitId, setKitId] = useState('acoustic')
   const [arrangement, setArr] = useState<Arrangement | null>(null)
   const [section, setSection] = useState<number | null>(null)
+  const [tuning, setTuning] = useState<Tuning>({})
 
   const e = useCallback(() => {
     if (!eng.current) { eng.current = new RhythmEngine(); eng.current.setKit(KITS[0]); eng.current.onSection = setSection }
@@ -33,9 +36,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => { if (!arrangement) e().setLayers(layers) }, [layers, arrangement, e])
+  useEffect(() => { e().setKit(applyTuning(KITS.find(k => k.id === kitId)!, tuning)) }, [kitId, tuning, e])
 
   const value = useMemo<Ctx>(() => ({
-    layers, playing, bpm, swing, kitId, section, arrangement,
+    layers, playing, bpm, swing, kitId, section, arrangement, tuning, setTuning,
     load: (p, add) => {
       e().setArrangement(null); setArr(null); setSection(null)
       const l: Layer = { id: `l${n++}`, pattern: p, volume: 0.85, mute: false, solo: false }
@@ -56,9 +60,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     },
     setBpm: v => { setBpmS(v); e().setBpm(v) },
     setSwing: v => { setSwingS(v); e().setSwing(v) },
-    setKit: id => { setKitId(id); e().setKit(KITS.find(k => k.id === id)!) },
+    setKit: id => setKitId(id),
     subscribe: l => e().subscribe(l),
-  }), [layers, playing, bpm, swing, kitId, section, arrangement, e])
+  }), [layers, playing, bpm, swing, kitId, section, arrangement, tuning, e])
   return <C.Provider value={value}>{children}</C.Provider>
 }
 

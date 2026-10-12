@@ -5,7 +5,9 @@ import { HISTORY, SOURCES } from '../data/history'
 import { CULTURES, WORDING_NOTES, INTERLOCK_PRESETS, SOURCES_VERIFIED, type Strength } from '../data/cultures'
 import { ARTISTS } from '../data/artists'
 import { THEORY } from '../data/theory'
-import type { Pattern } from '../engine/types'
+import type { Pattern, Voice } from '../engine/types'
+import { PITCHED, noteName, midiToHz } from '../engine/pitch'
+import { TUNING_PRESETS, PITCH_TEXT, PITCH_PATTERNS } from '../data/pitch'
 import { LoadButtons, usePlayer } from './player'
 
 const H1 = ({ t, sub }: { t: string; sub: string }) => <header className="mb-12"><h1 className="text-3xl font-semibold tracking-tight">{t}</h1><p className="mt-3 text-bone/60 leading-relaxed">{sub}</p></header>
@@ -51,7 +53,7 @@ export function History() {
       <p className="mt-3 text-xs text-bone/40">Sources: {h.sources.map(s => SOURCES.find(x => x.id === s)!.cite.split('(')[0].trim()).join('; ')}</p>
     </section>)}
     <section className="mb-14"><Tag c="Across Europe and its neighbours" /><h2 className="mt-1 text-xl font-medium">Fifteen traditions, rated by evidence</h2>
-      {!SOURCES_VERIFIED && <p className="mt-2 text-xs text-bone/40">These research notes are still being checked against their sources.</p>}
+      <p className="mt-2 text-xs text-bone/40">{SOURCES_VERIFIED ? `Source links checked ${SOURCES_VERIFIED}.` : 'These research notes are still being checked against their sources.'}</p>
       <div className="mt-6 divide-y divide-line">{CULTURES.map(c => <div key={c.id} className="py-4">
         <button className="w-full flex justify-between text-left gap-4" onClick={() => setOpen(open === c.id ? null : c.id)}>
           <span>{c.culture}</span><span className={`text-xs uppercase tracking-wider ${STRENGTH[c.evidenceStrength]}`}>{c.evidenceStrength}</span></button>
@@ -74,7 +76,7 @@ export function History() {
 export function Lens({ id, go }: { id?: string; go: (h: string) => void }) {
   const a = ARTISTS.find(x => x.id === id)
   if (!a) return <>
-    <H1 t="Percussionist lens" sub="How five drummers create feeling and tell a story with the kit." />
+    <H1 t="Percussionist lens" sub="How six drummers create feeling and tell a story with the kit." />
     <ul className="divide-y divide-line">{ARTISTS.map(x => <li key={x.id}><button onClick={() => go(`lens/${x.id}`)} className="w-full py-5 text-left flex justify-between"><span className="text-lg">{x.name}</span><span className="text-sm text-bone/40">{x.band}</span></button></li>)}</ul>
   </>
   return <>
@@ -101,5 +103,34 @@ export function Theory() {
       {c.patterns.map(p => <div key={p.id} className="mt-5"><h3 className="text-sm font-medium">{p.name}</h3><LoadButtons pattern={p} /></div>)}
       {c.patterns.length > 1 && <button className="mt-4 text-sm text-amber" onClick={() => loadAll(c.patterns)}>Play all {c.patterns.length} together →</button>}
     </section>)}
+  </>
+}
+
+export function Pitch() {
+  const { tuning, setTuning, kitId, setKit } = usePlayer()
+  const [preset, setPreset] = useState<string | null>(null)
+  const pick = (id: string) => { const p = TUNING_PRESETS.find(x => x.id === id)!; setPreset(id); setTuning(p.tuning); if (kitId !== 'tuned') setKit('tuned') }
+  const nudge = (v: Voice, d: number) => { const base = tuning[v] ?? TUNING_PRESETS[0].tuning[v]!; setTuning({ ...TUNING_PRESETS[0].tuning, ...tuning, [v]: base + d }); setPreset(null) }
+  const LABEL: Record<string, string> = { low: 'Kick', tomLo: 'Floor tom', tomHi: 'Low tom', back: 'Mid tom', accent: 'High tom', bell: 'Top tom' }
+  return <>
+    <H1 t="Kit as pitch" sub="Drums have pitch, though not as precisely as a piano. Tune each voice to a note and the kit can play a melody." />
+    {PITCH_TEXT.slice(0, 4).map(t => <section key={t.h} className="mb-10"><h2 className="text-lg font-medium">{t.h}</h2><p className="mt-2 text-bone/70 leading-relaxed">{t.p}</p></section>)}
+    <section className="mb-12">
+      <h2 className="text-lg font-medium">Tune the kit</h2>
+      <p className="mt-2 text-sm text-bone/50">{PITCH_TEXT[4].p}</p>
+      <div className="mt-5 flex flex-wrap gap-2">{TUNING_PRESETS.map(p => <button key={p.id} onClick={() => pick(p.id)} className={`h-9 px-3 rounded-full text-xs ${preset === p.id ? 'bg-bone text-ink' : 'border border-line text-bone/70'}`}>{p.name}</button>)}
+        <button onClick={() => { setTuning({}); setPreset(null) }} className="h-9 px-3 text-xs text-bone/40">Reset</button></div>
+      {preset && <p className="mt-3 text-sm text-bone/60">{TUNING_PRESETS.find(p => p.id === preset)!.note}</p>}
+      <ul className="mt-6 divide-y divide-line">{[...PITCHED].reverse().map(v => { const m = tuning[v]; return (
+        <li key={v} className="flex items-center gap-3 py-3">
+          <span className="flex-1 text-sm">{LABEL[v]}</span>
+          <span className="w-24 text-right text-sm tabular-nums">{m !== undefined ? <>{noteName(m)} <span className="text-bone/40">{midiToHz(m).toFixed(1)} Hz</span></> : <span className="text-bone/40">kit default</span>}</span>
+          <button aria-label="down a semitone" onClick={() => nudge(v, -1)} className="w-9 h-9 rounded-full border border-line">−</button>
+          <button aria-label="up a semitone" onClick={() => nudge(v, 1)} className="w-9 h-9 rounded-full border border-line">+</button>
+        </li>) })}</ul>
+      <p className="mt-3 text-xs text-bone/40">Tuning applies to whichever kit is selected. It sounds clearest on Tuned toms.</p>
+    </section>
+    <section><Tag c="Melodic patterns" />{PITCH_PATTERNS.map(p => <div key={p.id} className="mt-5"><h3 className="text-sm font-medium">{p.name}</h3><LoadButtons pattern={p} /></div>)}
+      <p className="mt-6 text-sm text-bone/50">See also the <a href="#/lens/carey" className="text-amber">Danny Carey</a> lens page.</p></section>
   </>
 }

@@ -45,4 +45,15 @@ export const KITS: Kit[] = [
     accent: { kind: 'metal', pitch: 2500, tone: 1.1, decay: 0.06, gain: 0.2 },
     shaker: { kind: 'noise', tone: 9000, decay: 0.07, gain: 0.3 },
     bell: { kind: 'metal', pitch: 560, tone: 1.4, decay: 0.18, gain: 0.16 } } },
+  { id: 'tuned', name: 'Tuned toms', blurb: 'Six pitched membranes for melodic playing (Kit as Pitch).', voices: {
+    low: { kind: 'membrane', pitch: 65.4, decay: 0.7, pitchDecay: 0.03, gain: 1.1 },
+    tomLo: { kind: 'membrane', pitch: 98, decay: 0.55, pitchDecay: 0.02 },
+    tomHi: { kind: 'membrane', pitch: 130.8, decay: 0.5, pitchDecay: 0.02 },
+    back: { kind: 'membrane', pitch: 164.8, decay: 0.45, pitchDecay: 0.015 },
+    accent: { kind: 'membrane', pitch: 196, decay: 0.4, pitchDecay: 0.015 },
+    bell: { kind: 'membrane', pitch: 261.6, decay: 0.35, pitchDecay: 0.01 },
+    tick: { kind: 'noise', tone: 8000, decay: 0.04, gain: 0.35 },
+    open: { kind: 'noise', tone: 7000, decay: 0.3, gain: 0.3 },
+    ride: { kind: 'metal', pitch: 420, tone: 5.1, decay: 0.5, gain: 0.12 },
+    shaker: { kind: 'noise', tone: 9000, decay: 0.05, gain: 0.25 } } },
 ]

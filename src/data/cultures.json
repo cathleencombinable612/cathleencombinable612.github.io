@@ -57,7 +57,7 @@
       "groupEvidence": "families attend",
       "evidenceStrength": "strong",
       "sources": [
-        "https://en.wikipedia.org/wiki/Tuvan_shamanism",
+        "https://en.wikipedia.org/wiki/Tuvans#Religion",
         "https://en.wikipedia.org/wiki/Mongolian_shamanism"
       ],
       "flags": [
@@ -136,7 +136,8 @@
       "evidenceStrength": "strong",
       "sources": [
         "https://en.wikipedia.org/wiki/Tarantism",
-        "https://en.wikipedia.org/wiki/Pizzica"
+        "https://en.wikipedia.org/wiki/Pizzica",
+        "https://books.google.com/books/about/The_Land_of_Remorse.html?id=d3i1AAAAIAAJ"
       ],
       "flags": [
         "Notte della Taranta is a revival, not a ritual"
@@ -151,9 +152,10 @@
       "groupEvidence": "collective ecstasy in texts",
       "evidenceStrength": "moderate",
       "sources": [
-        "http://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0092",
-        "http://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0166",
-        "https://en.wikipedia.org/wiki/Corybantes"
+        "https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0092",
+        "https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0166",
+        "https://en.wikipedia.org/wiki/Corybantes",
+        "https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0180%3Atext%3DIon%3Asection%3D533e"
       ],
       "flags": [
         "literary not ethnographic"
@@ -179,7 +181,7 @@
       "id": "balkan-romani",
       "culture": "Balkan & Romani",
       "instrument": "tapan/davul, lyra, gaida, violin",
-      "practice": "Anastenaria fire-walking; Călușari",
+      "practice": "Anastenaria/Nestinarstvo fire-walking (May 21 GR; June 3–4 Bulgari); Călușari (2 violins + accordion)",
       "rhythm": "aksak 7/8, 9/8, 11/8",
       "groupEvidence": "possession-like group states",
       "evidenceStrength": "strong",
@@ -236,5 +238,6 @@
         "duende is aesthetic, not trance"
       ]
     }
-  ]
+  ],
+  "verified": "2026-10-12"
 }
