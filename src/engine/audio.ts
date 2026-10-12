@@ -1,8 +1,8 @@
 import * as Tone from 'tone'
 import type { Kit, KitVoice, Layer, Voice, Arrangement, Pattern, Fill } from './types'
-import { TICKS_PER_BAR, hitsAt, stepForTick, swingOffset, audibleLayers, ticksPerStep , subHitsAt} from './pattern'
+import { TICKS_PER_BAR, hitsAt, stepForTick, swingOffset, audibleLayers, ticksPerStep , subHitsAt, VARIANTS } from './pattern'
 
-type Inst = { trigger: (t: number, v: number) => void; choke?: (t: number) => void; dispose: () => void }
+type Inst = { trigger: (t: number, v: number, r?: number) => void; choke?: (t: number) => void; dispose: () => void }
 
 // ---- sample bank: lazy, cached, shared across kits/layers ----
 let SAMPLE_BASE = ''
@@ -25,20 +25,20 @@ export async function preloadKit(kit: Kit, onProgress?: (done: number, total: nu
 function makeSynth(kv: KitVoice, g: Tone.Gain): Inst {
   if (kv.kind === 'membrane') {
     const s = new Tone.MembraneSynth({ pitchDecay: kv.pitchDecay ?? 0.05, octaves: 4, envelope: { attack: 0.001, decay: (kv.decay ?? 0.3), sustain: 0, release: 0.05 } }).connect(g)
-    return { trigger: (t, v) => s.triggerAttackRelease(kv.pitch ?? 60, (kv.decay ?? 0.3), t, v), dispose: () => s.dispose() }
+    return { trigger: (t, v, r = 1) => s.triggerAttackRelease((kv.pitch ?? 60) * r, (kv.decay ?? 0.3), t, v), dispose: () => s.dispose() }
   }
   if (kv.kind === 'noise') {
     const f = new Tone.Filter(kv.tone ?? 6000, kv.tone && kv.tone > 4000 ? 'highpass' : 'bandpass').connect(g)
     const s = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: (kv.decay ?? 0.3), sustain: 0 } }).connect(f)
     const body = kv.pitch ? new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 1.5, envelope: { attack: 0.001, decay: (kv.decay ?? 0.3) * 0.6, sustain: 0 } }).connect(g) : null
     return {
-      trigger: (t, v) => { s.triggerAttackRelease((kv.decay ?? 0.3), t, v); body?.triggerAttackRelease(kv.pitch!, (kv.decay ?? 0.3) * 0.6, t, v * 0.6) },
+      trigger: (t, v, r = 1) => { s.triggerAttackRelease((kv.decay ?? 0.3), t, v); body?.triggerAttackRelease(kv.pitch! * r, (kv.decay ?? 0.3) * 0.6, t, v * 0.6) },
       choke: t => s.triggerRelease(t),
       dispose: () => { s.dispose(); f.dispose(); body?.dispose() },
     }
   }
   const s = new Tone.MetalSynth({ harmonicity: kv.tone ?? 5.1, modulationIndex: 16, resonance: 3000, octaves: 1.2, envelope: { attack: 0.001, decay: (kv.decay ?? 0.3), release: 0.05 } }).connect(g)
-  return { trigger: (t, v) => s.triggerAttackRelease(kv.pitch ?? 300, (kv.decay ?? 0.3), t, v), choke: t => s.triggerRelease(t), dispose: () => s.dispose() }
+  return { trigger: (t, v, r = 1) => s.triggerAttackRelease((kv.pitch ?? 300) * r, (kv.decay ?? 0.3), t, v), choke: t => s.triggerRelease(t), dispose: () => s.dispose() }
 }
 
 function makeInst(kv: KitVoice, out: Tone.ToneAudioNode): Inst {
@@ -50,15 +50,15 @@ function makeInst(kv: KitVoice, out: Tone.ToneAudioNode): Inst {
   const rr = layers.map(() => 0)
   const live = new Set<Tone.ToneBufferSource>()
   return {
-    trigger: (t, v) => {
+    trigger: (t, v, r = 1) => {
       let li = layers.findIndex(l => v <= l.vel + 1e-6); if (li < 0) li = layers.length - 1
       const files = layers[li].files, f = files[rr[li]++ % files.length]
       const buf = buffers.get(f)
-      if (!buf) { fb?.trigger(t, v); return }
+      if (!buf) { fb?.trigger(t, v, r); return }
       const lo = li ? layers[li - 1].vel : 0
       const rel = (v - lo) / Math.max(0.01, layers[li].vel - lo) // position within layer
       const src = new Tone.ToneBufferSource(buf).connect(g)
-      if (kv.rate) src.playbackRate.value = kv.rate
+      if (kv.rate || r !== 1) src.playbackRate.value = (kv.rate ?? 1) * r
       src.onended = () => { live.delete(src); src.dispose() }
       live.add(src)
       src.start(t, 0, undefined, 0.55 + 0.45 * Math.min(1, rel))
@@ -108,7 +108,7 @@ export class RhythmEngine {
       const step = this.songTick / tps; const stepSec = tickSec * tps
       let t = time + swingOffset(p, step, this.swing) * stepSec
       if (p.humanize) { const r = Math.sin((this.songBar * 97 + step) * 12.9898) * 43758.5453; t += (p.humanize.lateMs + ((r - Math.floor(r)) * 2 - 1) * p.humanize.jitterMs) / 1000 }
-      for (const h of hitsAt(p, step)) this.play(SONG_ID, h.voice, t, h.velocity, h.graces, stepSec)
+      for (const h of hitsAt(p, step)) this.play(SONG_ID, h.voice, t, h.velocity, h.graces, stepSec, p.variant?.[h.voice]?.[step])
       for (const h of subHitsAt(p, step)) this.play(SONG_ID, h.voice, t + h.frac * stepSec, h.velocity, 0, stepSec)
       const b = this.songBar; Tone.getDraw().schedule(() => this.listeners.forEach(f => f({ [SONG_ID]: step }, b)), time)
     }
@@ -154,20 +154,23 @@ export class RhythmEngine {
   }
 
   /** Optional event trace for timing tests: every scheduled hit's audio-context time. */
-  trace: { t: number; src: string; voice: Voice; bar: number }[] | null = null
+  trace: { t: number; src: string; voice: Voice; bar: number; variant?: string }[] | null = null
   /** Bar length in ticks follows the first layer's own bar (e.g. 42 ticks for 7/8), so fills land on its bar lines. */
   private barTicks(): number {
     const p = this.layers[0]?.pattern; if (!p) return TICKS_PER_BAR
     const len = p.steps * ticksPerStep(p)
     return p.barTicks ?? (len <= TICKS_PER_BAR * 2 && len % 6 === 0 && len !== TICKS_PER_BAR * 2 ? len : TICKS_PER_BAR)
   }
-  private play(channelId: string, voice: Voice, t: number, vel: number, graces = 0, stepSec = 0.1) {
-    this.trace?.push({ t, src: channelId, voice, bar: this.bar })
+  private play(channelId: string, voice: Voice, t: number, vel: number, graces = 0, stepSec = 0.1, variant?: string) {
+    this.trace?.push({ t, src: channelId, voice, bar: this.bar, variant })
+    const vr = variant ? VARIANTS[variant] : undefined
+    if (vr?.voice) voice = vr.voice
+    vel = Math.min(1, vel * (vr?.gain ?? 1))
     const inst = this.inst(channelId, voice); if (!inst) return
     if (voice === 'tick' || voice === 'pedal') this.channels.get(channelId)?.insts.open?.choke?.(t)
     const g = Math.max(0.02, Math.min(0.028, stepSec / 2)) // flam/drag grace spacing: ~28 ms, never past half a step
     for (let i = graces; i > 0; i--) inst.trigger(Math.max(0, t - g * i), vel * 0.35)
-    inst.trigger(t, vel)
+    inst.trigger(t, vel, vr?.rate ?? 1)
   }
 
   private applySection(bar: number, time: number) {

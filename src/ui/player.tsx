@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { RhythmEngine, preloadKit, setSampleBase } from '../engine/audio'
 import type { Arrangement, Fill, Layer, Pattern, Voice } from '../engine/types'
 import { VOICES } from '../engine/types'
-import { velocityOf, ticksPerStep } from '../engine/pattern'
+import { velocityOf, ticksPerStep, VARIANTS } from '../engine/pattern'
 import { KITS } from '../data/kits'
 import { PATTERNS, RHYTHMS } from '../data/rhythms'
 import { FILLS, FILL_EVERY } from '../data/fills'
@@ -155,6 +155,7 @@ export function StepGrid({ pattern, current }: { pattern: Pattern; current: numb
                   <span key={i} className={`relative flex-1 h-5 rounded-[3px] overflow-hidden transition-colors duration-75 ${beat ? 'ml-[3px]' : ''} ${i === current ? 'bg-amber/25' : 'bg-white/[0.04]'}`}>
                     {vel > 0 && <span className={`absolute inset-x-0 bottom-0 rounded-[3px] transition-[background-color,transform] duration-100 ${i === current ? 'bg-amber scale-y-110' : 'bg-bone/70'}`} style={{ height: `${Math.round(25 + vel * 75)}%` }} />}
                     {(c === 'f' || c === 'r') && <span className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-ink" />}
+                    {pattern.variant?.[v]?.[String(i)] && <span title={VARIANTS[pattern.variant[v]![String(i)]]?.label} className="absolute inset-0 grid place-items-center text-[7px] leading-none font-semibold text-ink/75">{VARIANTS[pattern.variant[v]![String(i)]]?.short}</span>}
                     {pattern.sub?.[v]?.[String(i)]?.map(([fr, sv], j) => <span key={j} className={`absolute bottom-0 w-[2px] rounded-full ${i === current ? 'bg-amber' : 'bg-bone/80'}`} style={{ left: `${fr * 100}%`, height: `${Math.round(25 + sv * 75)}%` }} />)}
                   </span>
                 )
@@ -341,7 +342,7 @@ const Label = ({ children, className = '' }: { children: ReactNode; className?: 
 
 /** Muted palette for bar and section variation cues (amber stays reserved for "now"). */
 const VAR_COLORS = ['#7d8fa3', '#8fa38a', '#b08a78', '#9a86a8', '#b3a37a', '#7aa39f', '#a3787f', '#8a8f9a']
-const barSig = (b: Pattern) => JSON.stringify([b.tracks, b.sub ?? null, b.timeSig ?? ''])
+const barSig = (b: Pattern) => JSON.stringify([b.tracks, b.sub ?? null, b.variant ?? null, b.timeSig ?? ''])
 /** Per bar: letter index within its section, whether it departs from the section's main bar (variation, fill, crash).
  *  Per section: a group index shared by sections with identical bar content (Verse 2 = Verse 1). */
 function variation(sg: Song) {

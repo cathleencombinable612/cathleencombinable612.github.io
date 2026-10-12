@@ -68,3 +68,23 @@ export function subHitsAt(p: Pattern, step: number): (Hit & { frac: number })[] 
   }
   return out
 }
+
+/** Hit variants: a different size/pitch of the same instrument family, played by re-pitching (and optionally re-routing) a kit voice.
+ *  `short` is the tiny in-cell label. */
+export const VARIANTS: Record<string, { label: string; short: string; voice?: Voice; rate?: number; gain?: number }> = {
+  crash16: { label: '16" crash', short: '16', voice: 'crash1', rate: 1.12 },
+  crash18: { label: '18" crash', short: '18', voice: 'crash2', rate: 1 },
+  crash20: { label: '20" crash', short: '20', voice: 'crash2', rate: 0.9 },
+  splash: { label: 'Splash', short: 'sp', voice: 'crash1', rate: 1.6, gain: 0.7 },
+  china: { label: 'China', short: 'ch', voice: 'china' },
+  chinaSmall: { label: 'Small china', short: 'c·', voice: 'china', rate: 1.3, gain: 0.8 },
+  ride2: { label: 'Second ride', short: 'r2', voice: 'ride', rate: 0.88 },
+  rideBell: { label: 'Ride bell', short: 'rb', voice: 'rideBell' },
+  cowbell: { label: 'Cowbell', short: 'cb', voice: 'bell' },
+  agogoHi: { label: 'Agogô high', short: 'a↑', voice: 'bell', rate: 1.5, gain: 0.85 },
+  agogoLo: { label: 'Agogô low', short: 'a↓', voice: 'bell', rate: 1.18, gain: 0.85 },
+  bellBig: { label: 'Large bell', short: 'b↓', voice: 'rideBell', rate: 0.8 },
+  tomHi2: { label: 'High tom 2', short: 'h2', voice: 'tomHi', rate: 1.12 },
+  tomMid2: { label: 'Low-mid tom', short: 'm2', voice: 'tomMid', rate: 0.9 },
+  tomFloor2: { label: 'Low floor tom', short: 'f2', voice: 'tomLo', rate: 0.86 },
+}

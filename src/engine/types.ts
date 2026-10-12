@@ -30,6 +30,8 @@ export interface Pattern {
   timeSig?: string
   /** Sub-step hits: per voice, per step, [fraction of the step (0–1), velocity] pairs, e.g. 32nds or roll strokes. */
   sub?: Partial<Record<Voice, Record<string, [number, number][]>>>
+  /** Instrument/pitch variant per hit: voice → step → variant id (see VARIANTS), e.g. splash on the crash row. */
+  variant?: Partial<Record<Voice, Record<string, string>>>
   /** Laid-back feel: every note later by lateMs, plus a repeatable ±jitterMs human wobble. */
   humanize?: { lateMs: number; jitterMs: number }
   /** URL for the default tempo's source. */
