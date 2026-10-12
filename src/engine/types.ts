@@ -28,6 +28,8 @@ export interface Pattern {
   barTicks?: number
   /** Display time signature, e.g. '7/8'. */
   timeSig?: string
+  /** Sub-step hits: per voice, per step, [fraction of the step (0–1), velocity] pairs, e.g. 32nds or roll strokes. */
+  sub?: Partial<Record<Voice, Record<string, [number, number][]>>>
   /** Laid-back feel: every note later by lateMs, plus a repeatable ±jitterMs human wobble. */
   humanize?: { lateMs: number; jitterMs: number }
   /** URL for the default tempo's source. */

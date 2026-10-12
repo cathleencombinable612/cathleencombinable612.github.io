@@ -139,7 +139,7 @@ const VOICE_LABEL: Record<Voice, string> = {
 
 /** Velocity-aware step grid. Rows = voices used, bars show velocity, playhead column glows. */
 export function StepGrid({ pattern, current }: { pattern: Pattern; current: number }) {
-  const rows = VOICES.filter(v => pattern.tracks[v])
+  const rows = VOICES.filter(v => pattern.tracks[v] || pattern.sub?.[v])
   const dense = pattern.steps > 16
   return (
     <div className={`mt-3 ${dense ? 'overflow-x-auto -mx-1 px-1' : ''}`}>
@@ -149,12 +149,13 @@ export function StepGrid({ pattern, current }: { pattern: Pattern; current: numb
             <span className="w-12 shrink-0 text-[10px] uppercase tracking-wider text-mute">{VOICE_LABEL[v]}</span>
             <div className="flex-1 flex gap-[2px]">
               {Array.from({ length: pattern.steps }, (_, i) => {
-                const c = pattern.tracks[v]![i]; const vel = velocityOf(c)
+                const c = pattern.tracks[v]?.[i]; const vel = velocityOf(c)
                 const beat = i % pattern.stepsPerBeat === 0 && i > 0
                 return (
                   <span key={i} className={`relative flex-1 h-5 rounded-[3px] overflow-hidden transition-colors duration-75 ${beat ? 'ml-[3px]' : ''} ${i === current ? 'bg-amber/25' : 'bg-white/[0.04]'}`}>
                     {vel > 0 && <span className={`absolute inset-x-0 bottom-0 rounded-[3px] transition-[background-color,transform] duration-100 ${i === current ? 'bg-amber scale-y-110' : 'bg-bone/70'}`} style={{ height: `${Math.round(25 + vel * 75)}%` }} />}
                     {(c === 'f' || c === 'r') && <span className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-ink" />}
+                    {pattern.sub?.[v]?.[String(i)]?.map(([fr, sv], j) => <span key={j} className={`absolute bottom-0 w-[2px] rounded-full ${i === current ? 'bg-amber' : 'bg-bone/80'}`} style={{ left: `${fr * 100}%`, height: `${Math.round(25 + sv * 75)}%` }} />)}
                   </span>
                 )
               })}
@@ -263,14 +264,14 @@ function FillPicker() {
 
 /** Bottom sheet: grab handle, close button, swipe down or tap outside to close. */
 function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
-  const [dy, setDy] = useState(0); const y0 = useRef<number | null>(null)
+  const [dy, setDy] = useState(0); const y0 = useRef<number | null>(null); const dyR = useRef(0)
   useEffect(() => { if (!open) setDy(0) }, [open])
   useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }; addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [onClose])
   return <>
     <div onClick={onClose} className={`fixed inset-0 z-40 bg-black/55 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
     <div role="dialog" aria-modal="true" aria-hidden={!open} className={`fixed inset-x-0 bottom-0 z-50 transition-transform ${y0.current === null ? 'duration-300 ease-out' : 'duration-0'} ${open ? '' : 'translate-y-full'}`} style={open && dy ? { transform: `translateY(${dy}px)` } : undefined}>
       <div className="max-w-xl mx-auto rounded-t-[24px] bg-[#141416] border-t border-white/[0.08] shadow-2xl shadow-black pb-[env(safe-area-inset-bottom)]">
-        <div className="sticky top-0 z-10 flex items-center h-14 pl-4 pr-1 border-b border-white/[0.06] touch-none cursor-grab rounded-t-[24px] bg-[#141416]" onTouchStart={e => { y0.current = e.touches[0].clientY }} onTouchMove={e => { if (y0.current !== null) setDy(Math.max(0, e.touches[0].clientY - y0.current)) }} onTouchEnd={() => { if (dy > 70) onClose(); y0.current = null; setDy(0) }}>
+        <div className="sticky top-0 z-10 flex items-center h-14 pl-4 pr-1 border-b border-white/[0.06] touch-none cursor-grab rounded-t-[24px] bg-[#141416]" onTouchStart={e => { y0.current = e.touches[0].clientY }} onTouchMove={e => { if (y0.current !== null) { dyR.current = Math.max(0, e.touches[0].clientY - y0.current); setDy(dyR.current) } }} onTouchEnd={() => { if (dyR.current > 70) onClose(); y0.current = null; dyR.current = 0; setDy(0) }}>
           <span className="absolute left-1/2 top-2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-white/30" />
           <span className="text-[13px] text-mute">Player</span>
           <button aria-label="Close player" onClick={onClose} className="ml-auto h-12 pl-4 pr-3 flex items-center gap-1.5 rounded-full text-sm text-bone/85 active:scale-95">
