@@ -5,12 +5,12 @@ import { HISTORY, SOURCES } from '../data/history'
 import { CULTURES, WORDING_NOTES, INTERLOCK_PRESETS, SOURCES_VERIFIED, type Strength } from '../data/cultures'
 import { ARTISTS } from '../data/artists'
 import { THEORY } from '../data/theory'
-import { SONGS } from '../data/songs'
+import { SONGS, type Song } from '../data/songs'
 import { videosFor, type Video } from '../data/videos'
 import type { Pattern, Voice } from '../engine/types'
 import { PITCHED, noteName, midiToHz } from '../engine/pitch'
 import { TUNING_PRESETS, PITCH_TEXT, PITCH_PATTERNS } from '../data/pitch'
-import { LoadButtons, usePlayer, StepGrid } from './player'
+import { LoadButtons, usePlayer, StepGrid, SongForm } from './player'
 
 const H1 = ({ t, sub }: { t: string; sub: string }) => <header className="mb-14 rise"><h1 className="text-[34px] leading-[1.1] font-semibold tracking-[-0.025em]">{t}</h1><p className="mt-4 text-[17px] text-bone/60 leading-relaxed max-w-[34ch]">{sub}</p></header>
 const Tag = ({ c }: { c: string }) => <span className="eyebrow">{c}</span>
@@ -31,25 +31,34 @@ function Styles() {
         <h2 className="text-xl font-medium tracking-tight">{r.pattern.name}</h2>
         <p className="mt-2.5 text-bone/80 leading-relaxed">{r.effect}</p>
         <p className="mt-2 text-bone/55 leading-relaxed text-[15px]">{r.why}</p>
-        {r.evidence !== 'established' && <p className="mt-4 text-sm text-bone/60 border-l-2 border-amber pl-3 leading-relaxed"><span className="text-amber">Evidence: {r.evidence}.</span> {r.evidenceNote}</p>}
-        {r.evidence === 'established' && r.evidenceNote && <p className="mt-2 text-xs text-mute">{r.evidenceNote}</p>}
+        {r.evidence !== 'established' && <Note line={`Evidence: ${r.evidence}`} more={r.evidenceNote} />}
+        {r.evidence === 'established' && r.evidenceNote && <Note line="Evidence: established" more={r.evidenceNote} />}
         <LoadButtons pattern={r.pattern} />
         {r.tryLayering && <p className="mt-3 text-xs text-mute">Try layering: {r.tryLayering.map(id => PATTERNS[id].name).join(', ')}</p>}
       </article>)}
     </section>)}</>
 }
 
+function SongButtons({ song }: { song: Song }) {
+  const P = usePlayer()
+  return <div className="flex items-center gap-2 mt-4">
+    <button className="btn-primary" onClick={async () => { P.loadSong(song); await P.toggle() }}><span className="inline-block w-0 h-0 border-y-[5px] border-y-transparent border-l-[8px] border-l-current" /> Play song</button>
+    <button className="btn-ghost" onClick={async () => { P.load(song.pattern); if (!P.playing) await P.toggle() }}>Loop groove</button>
+    <span className="ml-auto text-xs text-mute tabular-nums">{song.raw.bpm} BPM</span>
+  </div>
+}
+
 function Songs() {
   return <div className="rise">
-    <p className="mb-10 text-sm text-mute leading-relaxed">Approximate transcriptions of each drum part's core groove, simplified for learning. Drum part only: no audio or lyrics. Tempos come from the research notes.</p>
+    <Note className="mb-8" line="Simplified drum-part transcriptions, for learning." more="Approximate transcriptions of each drum part, simplified for learning. Drum part only: no audio or lyrics. Tempos and song forms are approximate. Details on the About page." />
     {SONGS.map(s => <article key={s.raw.id} className="mb-10 pb-10 border-b border-line last:border-0">
       <div className="flex items-baseline justify-between gap-3"><h2 className="text-xl font-medium tracking-tight">{s.raw.song}</h2><span className="text-xs text-mute tabular-nums shrink-0">{s.raw.timeSig}</span></div>
       <p className="mt-1 text-sm text-bone/60">{s.raw.artist} · {s.raw.drummer}</p>
-      <span className="mt-3 inline-block text-[10px] uppercase tracking-[0.12em] text-amber/90 border border-amber/30 rounded-full px-2 py-0.5">Approximate transcription</span>
       {s.raw.feel && <p className="mt-3 text-bone/80 leading-relaxed">{s.raw.feel}</p>}
       {s.raw.whyItWorks && <p className="mt-2 text-[15px] text-bone/55 leading-relaxed">{s.raw.whyItWorks}</p>}
       <StepGrid pattern={s.pattern} current={-1} />
-      <LoadButtons pattern={s.pattern} />
+      <SongButtons song={s} />
+      <details className="mt-3"><summary className="text-xs text-mute cursor-pointer">Form · {s.sections.length} sections · {s.bars.length} bars</summary><SongForm song={s} />{s.raw.formNote && <Note line="Form is approximate." more={s.raw.formNote} />}</details>
       {s.fills.length > 0 && <p className="mt-2 text-xs text-mute">Includes {s.fills.length === 1 ? 'a fill' : `${s.fills.length} fills`}, available under Fill in the player.</p>}
       {s.raw.source && <a href={s.raw.source} target="_blank" rel="noreferrer" className="mt-2 block text-xs text-mute underline underline-offset-2">Reference</a>}
     </article>)}
@@ -72,7 +81,7 @@ export function History() {
   const [open, setOpen] = useState<string | null>(null)
   return <>
     <H1 t="History" sub="Trance drumming from the Sámi noaidi to the wider shamanic world, and what the evidence can and can't support." />
-    <section className="mb-12 border-l-2 border-amber pl-4"><Tag c="Read with care" /><ul className="mt-2 space-y-1 text-sm text-bone/70">{WORDING_NOTES.map(w => <li key={w}>{w}</li>)}</ul></section>
+    <Note className="mb-10" line="Some popular claims here are weakly evidenced; ratings show which." more={WORDING_NOTES.join(' ')} />
     {HISTORY.map(h => <section key={h.id} className="mb-14"><Tag c={h.confidence} /><h2 className="mt-1 text-xl font-medium">{h.title}</h2>
       {h.body.map((b, i) => <p key={i} className="mt-3 text-bone/70 leading-relaxed">{b}</p>)}
       <p className="mt-3 text-xs text-bone/40">Sources: {h.sources.map(s => SOURCES.find(x => x.id === s)!.cite.split('(')[0].trim()).join('; ')}</p>
@@ -129,7 +138,7 @@ export function Lens({ id, go }: { id?: string; go: (h: string) => void }) {
     <section className="mb-10"><Tag c="Feeling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.feeling}</p></section>
     <section className="mb-12"><Tag c="Storytelling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.storytelling}</p></section>
     <section><Tag c="Try this" />{a.tryThis.map(t => <div key={t.pattern.id} className="mt-5"><h3 className="font-medium">{t.pattern.name}</h3><p className="mt-1 text-sm text-bone/60">{t.note}</p><LoadButtons pattern={t.pattern} /></div>)}
-      <p className="mt-8 text-xs text-bone/40">These patterns are simplified illustrations of each drummer's approach, not transcriptions.</p></section>
+      <Note className="mt-8" line="Simplified illustrations, not transcriptions." /></section>
   </>
 }
 
@@ -189,4 +198,10 @@ export function About() {
     <section className="mb-12"><Tag c="Video" /><p className="mt-3 text-bone/75 leading-relaxed">Videos are embedded from YouTube in privacy-enhanced mode (youtube-nocookie.com). Nothing loads until you tap play.</p></section>
     <section><Tag c="Code" /><p className="mt-3 text-bone/75 leading-relaxed"><a className="underline underline-offset-2" href="https://github.com/nmpy7knjd8-code/rhythm" target="_blank" rel="noreferrer">github.com/nmpy7knjd8-code/rhythm</a></p></section>
   </>
+}
+
+/** One-line muted caveat with an optional "more" toggle for the details. */
+function Note({ line, more, className = '' }: { line: string; more?: string; className?: string }) {
+  const [open, setOpen] = useState(false)
+  return <p className={`mt-2 text-[11px] text-mute leading-snug ${className}`}>{line}{more && <> <button className="underline underline-offset-2" onClick={() => setOpen(o => !o)}>{open ? 'less' : 'more'}</button>{open && <span className="block mt-1">{more}</span>}</>}</p>
 }

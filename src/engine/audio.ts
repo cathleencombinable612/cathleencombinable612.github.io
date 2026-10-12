@@ -70,7 +70,7 @@ function makeInst(kv: KitVoice, out: Tone.ToneAudioNode): Inst {
 
 interface Channel { gain: Tone.Gain; insts: Partial<Record<Voice, Inst>> }
 export type StepListener = (layerSteps: Record<string, number>, bar: number) => void
-const FILL_ID = 'fill', FX_ID = 'fx'
+const FILL_ID = 'fill', FX_ID = 'fx', SONG_ID = 'song'
 
 /** Thin Tone.js wrapper. All timing runs on Tone.Transport at a 48-tick-per-bar grid. */
 export class RhythmEngine {
@@ -87,6 +87,33 @@ export class RhythmEngine {
   private fill: Fill | null = null
   private fillEvery = 0
   onSection?: (index: number) => void
+  /** Song-form mode: a flat list of one-bar patterns played in order. */
+  private song: { bars: Pattern[]; loop: [number, number] | null } | null = null
+  private songBar = 0
+  private songTick = 0
+  private pendingJump: number | null = null
+  onSongBar?: (bar: number) => void
+  setSong(bars: Pattern[] | null) { this.song = bars ? { bars, loop: null } : null; this.songBar = 0; this.songTick = 0; this.pendingJump = null }
+  setSongLoop(loop: [number, number] | null) { if (this.song) this.song.loop = loop }
+  /** Jump to a bar: immediately if stopped, otherwise at the next bar line. */
+  jumpSong(bar: number) { if (!this.playing) { this.songBar = bar; this.songTick = 0 } else this.pendingJump = bar }
+  private songStep(time: number, tickSec: number) {
+    const song = this.song!; const p = song.bars[this.songBar]; const tps = ticksPerStep(p); const len = p.steps * tps
+    if (this.songTick === 0) { const b = this.songBar; Tone.getDraw().schedule(() => this.onSongBar?.(b), time) }
+    if (this.songTick % tps === 0) {
+      const step = this.songTick / tps; const stepSec = tickSec * tps
+      const t = time + swingOffset(p, step, this.swing) * stepSec
+      for (const h of hitsAt(p, step)) this.play(SONG_ID, h.voice, t, h.velocity, h.graces, stepSec)
+      const b = this.songBar; Tone.getDraw().schedule(() => this.listeners.forEach(f => f({ [SONG_ID]: step }, b)), time)
+    }
+    if (++this.songTick >= len) {
+      this.songTick = 0
+      let next = this.pendingJump ?? this.songBar + 1; this.pendingJump = null
+      if (song.loop && next >= song.loop[1]) next = song.loop[0]
+      if (next >= song.bars.length) next = 0
+      this.songBar = next
+    }
+  }
   onBar?: (bar: number, inFill: boolean) => void
 
   setKit(kit: Kit) { this.kit = kit; for (const c of this.channels.values()) this.clearInsts(c) }
@@ -104,7 +131,7 @@ export class RhythmEngine {
 
   setLayers(layers: Layer[]) {
     this.layers = layers
-    const ids = new Set([...layers.map(l => l.id), FILL_ID, FX_ID])
+    const ids = new Set([...layers.map(l => l.id), FILL_ID, FX_ID, SONG_ID])
     for (const [id, c] of this.channels) if (!ids.has(id)) { this.clearInsts(c); c.gain.dispose(); this.channels.delete(id) }
     for (const l of layers) this.channel(l.id, l.volume).gain.gain.rampTo(l.volume, 0.03)
   }
@@ -149,7 +176,9 @@ export class RhythmEngine {
     if (this.eventId !== null) return
     this.tick = 0; this.bar = 0
     const tickLen = `${(tr.PPQ * 4) / TICKS_PER_BAR}i`
+    this.songTick = 0
     this.eventId = tr.scheduleRepeat(time => {
+      if (this.song) { this.songStep(time, Tone.Time(tickLen).toSeconds()); this.tick++; return }
       const barStart = this.tick % TICKS_PER_BAR === 0
       const fillBar = this.inFill(this.bar)
       if (barStart) {

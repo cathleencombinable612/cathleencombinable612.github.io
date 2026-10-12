@@ -7,9 +7,18 @@ export interface SongEntryRaw {
   id: string; song: string; artist: string; drummer: string; bpm: number; timeSig: string
   stepsPerBar: number; bars: number; voices: Record<string, number[]>
   feel?: string; whyItWorks?: string; source?: string; confidence?: string; label?: string
+  sections?: { name: string; repeat: number; confidence?: string; bars: Record<string, string>[] }[]
+  form?: { section: string; bars: number }[]; formSource?: string; formNote?: string
   fills?: { name: string; stepsPerBar: number; bars: number; voices: Record<string, number[]> }[]
 }
-export interface Song { raw: SongEntryRaw; pattern: Pattern; fills: Fill[] }
+export interface SongSection { name: string; start: number; bars: number; confidence?: string }
+export interface Song { raw: SongEntryRaw; pattern: Pattern; fills: Fill[]; bars: Pattern[]; sections: SongSection[] }
+function stringTracks(b: Record<string, string>): Track {
+  const t: Track = {}
+  for (const [k, str] of Object.entries(b)) { const v = VOICE_ALIASES[k]; if (!v) continue
+    t[v] = t[v] ? [...str].map((c, i) => (c !== '.' && (t[v]![i] === '.' || c > t[v]![i]) ? c : t[v]![i])).join('') : str }
+  return t
+}
 
 /** Map research voice names onto the app's abstract voices. Unknown names are dropped (and reported in dev). */
 export const VOICE_ALIASES: Record<string, Voice> = {
@@ -50,6 +59,13 @@ export const SONGS: Song[] = (raw as unknown as SongEntryRaw[]).map(s => {
     pattern: { id: `song-${s.id}-fill${i}`, name: `${s.song}: ${f.name}`, steps: f.stepsPerBar * f.bars, stepsPerBeat: Math.max(1, f.stepsPerBar / 4), tracks: toTracks(f.voices) },
     crashAfter: true, description: `From the ${s.song} research entry (approximate transcription).`,
   }))
-  return { raw: s, pattern, fills }
+  const bars: Pattern[] = []; const sections: SongSection[] = []
+  for (const sec of s.sections ?? []) {
+    const start = bars.length
+    for (let r = 0; r < (sec.repeat || 1); r++) for (const b of sec.bars)
+      bars.push({ ...pattern, id: `song-${s.id}-b${bars.length}`, steps: s.stepsPerBar, tracks: stringTracks(b) })
+    sections.push({ name: sec.name, start, bars: bars.length - start, confidence: sec.confidence })
+  }
+  return { raw: s, pattern: { ...pattern, steps: s.stepsPerBar * s.bars }, fills, bars, sections }
 })
 registerPatterns(SONGS.flatMap(s => [s.pattern, ...s.fills.map(f => f.pattern)]))
