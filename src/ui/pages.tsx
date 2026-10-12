@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { RHYTHMS, PATTERNS } from '../data/rhythms'
 import { STORY_ARRANGEMENT, STORY_TEXT } from '../data/story'
 import { HISTORY, SOURCES } from '../data/history'
@@ -69,10 +69,18 @@ function RequestSong() {
 }
 
 function Songs() {
+  // artist groups shuffled on each visit; songs inside a group keep their order
+  const list = useMemo(() => {
+    const groups = new Map<string, typeof SONGS>()
+    for (const s of SONGS) { const k = s.raw.artist; if (!groups.has(k)) groups.set(k, []); groups.get(k)!.push(s) }
+    const g = [...groups.values()]
+    for (let i = g.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [g[i], g[j]] = [g[j], g[i]] }
+    return g.flat()
+  }, [])
   return <div className="rise">
     <RequestSong />
     <Note className="mb-8" line="Simplified drum-part transcriptions, for learning." more="Approximate transcriptions of each drum part, simplified for learning. Drum part only: no audio or lyrics. Tempos and song forms are approximate. Details on the About page." />
-    {SONGS.map(s => <article key={s.raw.id} className="mb-10 pb-10 border-b border-line last:border-0">
+    {list.map(s => <article key={s.raw.id} className="mb-10 pb-10 border-b border-line last:border-0">
       <div className="flex items-baseline justify-between gap-3"><h2 className="text-xl font-medium tracking-tight">{s.raw.song}</h2><span className="text-xs text-mute tabular-nums shrink-0">{s.raw.timeSig}</span></div>
       <p className="mt-1 text-sm text-bone/60">{s.raw.artist} · {s.raw.drummer}</p>
       {s.raw.feel && <p className="mt-3 text-bone/80 leading-relaxed">{s.raw.feel}</p>}
