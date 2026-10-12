@@ -99,7 +99,11 @@ export class RhythmEngine {
   jumpSong(bar: number) { if (!this.playing) { this.songBar = bar; this.songTick = 0 } else this.pendingJump = bar }
   private songStep(time: number, tickSec: number) {
     const song = this.song!; const p = song.bars[this.songBar]; const tps = ticksPerStep(p); const len = p.steps * tps
-    if (this.songTick === 0) { const b = this.songBar; Tone.getDraw().schedule(() => this.onSongBar?.(b), time) }
+    if (this.songTick === 0) {
+      const b = this.songBar; Tone.getDraw().schedule(() => this.onSongBar?.(b), time)
+      // tempo map: each bar may carry its own tempo; change it exactly on the bar line
+      if (p.suggestedBpm && Math.abs(Tone.getTransport().bpm.getValueAtTime(time) - p.suggestedBpm) > 0.01) Tone.getTransport().bpm.setValueAtTime(p.suggestedBpm, time)
+    }
     if (this.songTick % tps === 0) {
       const step = this.songTick / tps; const stepSec = tickSec * tps
       const t = time + swingOffset(p, step, this.swing) * stepSec
@@ -147,7 +151,16 @@ export class RhythmEngine {
     return (c.insts[v] ??= makeInst(this.kit.voices[v], c.gain))
   }
 
+  /** Optional event trace for timing tests: every scheduled hit's audio-context time. */
+  trace: { t: number; src: string; voice: Voice; bar: number }[] | null = null
+  /** Bar length in ticks follows the first layer's own bar (e.g. 42 ticks for 7/8), so fills land on its bar lines. */
+  private barTicks(): number {
+    const p = this.layers[0]?.pattern; if (!p) return TICKS_PER_BAR
+    const len = p.steps * ticksPerStep(p)
+    return p.barTicks ?? (len <= TICKS_PER_BAR * 2 && len % 6 === 0 && len !== TICKS_PER_BAR * 2 ? len : TICKS_PER_BAR)
+  }
   private play(channelId: string, voice: Voice, t: number, vel: number, graces = 0, stepSec = 0.1) {
+    this.trace?.push({ t, src: channelId, voice, bar: this.bar })
     const inst = this.inst(channelId, voice); if (!inst) return
     if (voice === 'tick' || voice === 'pedal') this.channels.get(channelId)?.insts.open?.choke?.(t)
     const g = Math.min(0.03, stepSec / 4)
@@ -179,7 +192,8 @@ export class RhythmEngine {
     this.songTick = 0
     this.eventId = tr.scheduleRepeat(time => {
       if (this.song) { this.songStep(time, Tone.Time(tickLen).toSeconds()); this.tick++; return }
-      const barStart = this.tick % TICKS_PER_BAR === 0
+      const BT = this.barTicks()
+      const barStart = this.tick % BT === 0
       const fillBar = this.inFill(this.bar)
       if (barStart) {
         this.applySection(this.bar, time)
@@ -189,7 +203,7 @@ export class RhythmEngine {
       const steps: Record<string, number> = {}
       const tickSec = Tone.Time(tickLen).toSeconds()
       const sources: { id: string; pattern: Pattern; tickBase: number }[] = fillBar
-        ? [{ id: FILL_ID, pattern: this.fill!.pattern, tickBase: this.tick % TICKS_PER_BAR }]
+        ? [{ id: FILL_ID, pattern: this.fill!.pattern, tickBase: this.tick % BT }]
         : audibleLayers(this.layers).map(l => ({ id: l.id, pattern: l.pattern, tickBase: this.tick }))
       for (const s of sources) {
         const step = stepForTick(s.pattern, s.tickBase); if (step === null) continue
@@ -201,7 +215,7 @@ export class RhythmEngine {
       if (!fillBar) for (const l of this.layers) if (steps[l.id] === undefined) { const s = stepForTick(l.pattern, this.tick); if (s !== null) steps[l.id] = s }
       if (Object.keys(steps).length) { const bar = this.bar; Tone.getDraw().schedule(() => this.listeners.forEach(f => f(steps, bar)), time) }
       this.tick++
-      if (this.tick % TICKS_PER_BAR === 0) this.bar++
+      if (this.tick % this.barTicks() === 0) this.bar++
     }, tickLen, 0)
     tr.start('+0.05')
   }

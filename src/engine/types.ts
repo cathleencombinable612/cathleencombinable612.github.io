@@ -24,6 +24,12 @@ export interface Pattern {
    *  Set explicitly for odd meters (7/8 in 16ths: steps 14, ticksPerStep 3) and polymeter. */
   ticksPerStep?: number
   suggestedSwing?: number
+  /** Explicit bar length in ticks (12 per quarter) when it differs from the pattern cycle. */
+  barTicks?: number
+  /** Display time signature, e.g. '7/8'. */
+  timeSig?: string
+  /** Category for browsing. */
+  category?: string
   /** Where the default tempo comes from (shown as a note). */
   bpmNote?: string
 }

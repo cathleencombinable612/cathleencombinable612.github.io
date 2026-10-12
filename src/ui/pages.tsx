@@ -16,16 +16,18 @@ const H1 = ({ t, sub }: { t: string; sub: string }) => <header className="mb-14 
 const Tag = ({ c }: { c: string }) => <span className="eyebrow">{c}</span>
 
 export function Library() {
-  const [tab, setTab] = useState<'styles' | 'songs'>('styles')
+  const [tab, setTab] = useState<'styles' | 'songs'>('songs')
   return <>
     <H1 t="Rhythm library" sub="Grooves from many styles and songs, each with notes on how it feels and why. Play one, then add layers." />
-    <div className="mb-12 inline-flex p-0.5 rounded-full bg-white/[0.05]">{(['styles', 'songs'] as const).map(t => <button key={t} onClick={() => setTab(t)} className={`h-9 px-5 rounded-full text-sm capitalize transition-all duration-200 ${tab === t ? 'bg-bone text-ink' : 'text-bone/60'}`}>{t === 'songs' ? `Songs · ${SONGS.length}` : `Styles · ${RHYTHMS.length}`}</button>)}</div>
+    <div className="mb-12 inline-flex p-0.5 rounded-full bg-white/[0.05]">{(['songs', 'styles'] as const).map(t => <button key={t} onClick={() => setTab(t)} className={`h-9 px-5 rounded-full text-sm capitalize transition-all duration-200 ${tab === t ? 'bg-bone text-ink' : 'text-bone/60'}`}>{t === 'songs' ? `Songs · ${SONGS.length}` : `Styles · ${RHYTHMS.length}`}</button>)}</div>
     {tab === 'styles' ? <Styles /> : <Songs />}
   </>
 }
 
 function Styles() {
-  const fams = [...new Set(RHYTHMS.map(r => r.family))]
+  const fams0 = [...new Set(RHYTHMS.map(r => r.family))]
+  // Trance & pulse (theta pulse, Harner tempo, rattle drone) used to open the page; it now sits at the end.
+  const fams = [...fams0.filter(f => f !== 'Trance & pulse'), ...fams0.filter(f => f === 'Trance & pulse')]
   return <>{fams.map(f => <section key={f} className="mb-16 rise"><Tag c={f} />
       {RHYTHMS.filter(r => r.family === f).map(r => <article key={r.pattern.id} className="mt-6 pb-10 border-b border-line last:border-0">
         <h2 className="text-xl font-medium tracking-tight">{r.pattern.name}</h2>
@@ -42,7 +44,7 @@ function Styles() {
 function SongButtons({ song }: { song: Song }) {
   const P = usePlayer()
   return <div className="flex items-center gap-2 mt-4">
-    <button className="btn-primary" onClick={async () => { P.loadSong(song); await P.toggle() }}><span className="inline-block w-0 h-0 border-y-[5px] border-y-transparent border-l-[8px] border-l-current" /> Play song</button>
+    <button className="btn-primary" onClick={async () => { await P.loadSong(song); await P.toggle() }}><span className="inline-block w-0 h-0 border-y-[5px] border-y-transparent border-l-[8px] border-l-current" /> Play song</button>
     <button className="btn-ghost" onClick={async () => { P.load(song.pattern); if (!P.playing) await P.toggle() }}>Loop groove</button>
     <span className="ml-auto text-xs text-mute tabular-nums">{song.raw.bpm} BPM</span>
   </div>
@@ -161,7 +163,7 @@ export function Theory() {
 export function Pitch() {
   const { tuning, setTuning, kitId, setKit } = usePlayer()
   const [preset, setPreset] = useState<string | null>(null)
-  const pick = (id: string) => { const p = TUNING_PRESETS.find(x => x.id === id)!; setPreset(id); setTuning(p.tuning); if (kitId !== 'tuned') setKit('tuned') }
+  const pick = (id: string) => { const p = TUNING_PRESETS.find(x => x.id === id)!; setPreset(id); setTuning(p.tuning); if (kitId !== 'acoustic') setKit('acoustic') }
   const nudge = (v: Voice, d: number) => { const base = tuning[v] ?? TUNING_PRESETS[0].tuning[v]!; setTuning({ ...TUNING_PRESETS[0].tuning, ...tuning, [v]: base + d }); setPreset(null) }
   const LABEL: Record<string, string> = { low: 'Kick', tomLo: 'Floor tom', tomHi: 'Low tom', back: 'Mid tom', accent: 'High tom', bell: 'Top tom' }
   return <>
@@ -180,7 +182,7 @@ export function Pitch() {
           <button aria-label="down a semitone" onClick={() => nudge(v, -1)} className="w-9 h-9 rounded-full border border-line">−</button>
           <button aria-label="up a semitone" onClick={() => nudge(v, 1)} className="w-9 h-9 rounded-full border border-line">+</button>
         </li>) })}</ul>
-      <p className="mt-3 text-xs text-bone/40">Tuning applies to whichever kit is selected. It sounds clearest on Tuned toms.</p>
+      <p className="mt-3 text-xs text-bone/40">Tuning pitch-shifts the recorded acoustic kit (and works on any kit you pick).</p>
     </section>
     <section><Tag c="Melodic patterns" />{PITCH_PATTERNS.map(p => <div key={p.id} className="mt-5"><h3 className="text-sm font-medium">{p.name}</h3><LoadButtons pattern={p} /></div>)}
       <p className="mt-6 text-sm text-bone/50">See also the <a href="#/lens/carey" className="text-amber">Danny Carey</a> lens page.</p></section>

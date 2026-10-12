@@ -6,8 +6,8 @@ import { velocityOf, ticksPerStep } from '../engine/pattern'
 import { KITS } from '../data/kits'
 import { PATTERNS } from '../data/rhythms'
 import { FILLS, FILL_EVERY } from '../data/fills'
-import { SONGS, type Song } from '../data/songs'
-import { applyTuning, type Tuning } from '../engine/pitch'
+import { SONGS, loadSongBars, type Song } from '../data/songs'
+import { applyTuning, applyShift, type Tuning } from '../engine/pitch'
 
 setSampleBase(`${import.meta.env.BASE_URL}samples/acoustic/`)
 export const ALL_FILLS: Fill[] = [...FILLS, ...SONGS.flatMap(s => s.fills)]
@@ -24,7 +24,7 @@ interface Ctx {
   toggle: () => Promise<void>; setBpm: (n: number) => void; setSwing: (n: number) => void; setKit: (id: string) => void
   subscribe: RhythmEngine['subscribe']
   song: Song | null; songBar: number; loopSection: number | null
-  loadSong: (s: Song, section?: number) => void; jumpSection: (i: number) => void; setLoopSection: (i: number | null) => void
+  loadSong: (s: Song, section?: number) => Promise<void>; jumpSection: (i: number) => void; setLoopSection: (i: number | null) => void
 }
 export const sectionOf = (s: Song, bar: number) => Math.max(0, s.sections.findIndex(x => bar >= x.start && bar < x.start + x.bars))
 const C = createContext<Ctx>(null!)
@@ -60,8 +60,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (!arrangement && !song) e().setLayers(layers) }, [layers, arrangement, song, e])
   useEffect(() => {
     const kit = KITS.find(k => k.id === kitId)!
-    e().setKit(applyTuning(kit, tuning))
-  }, [kitId, tuning, e])
+    e().setKit(applyShift(applyTuning(kit, tuning), song?.raw.tuning?.shift as Partial<Record<Voice, number>> | undefined))
+  }, [kitId, tuning, song, e])
   useEffect(() => { e().setFill(ALL_FILLS.find(f => f.pattern.id === fillId) ?? null, fillId ? fillEvery : 0) }, [fillId, fillEvery, e])
 
   const preload = useCallback((id: string) => {
@@ -74,7 +74,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     layers, playing, bpm, swing, kitId, section, arrangement, tuning, setTuning, fillId, fillEvery, inFill, kitProgress,
     setFill: (id, every) => { setFillId(id); if (every !== undefined) setFillEvery(every) },
     song, songBar, loopSection,
-    loadSong: (sg, sec = 0) => {
+    loadSong: async (sg, sec = 0) => {
+      await loadSongBars(sg)
       const en = e(); en.stop(); setPlaying(false); en.setArrangement(null); setArr(null); setSection(null); setLayers([])
       en.setSong(sg.bars); const st = sg.sections[sec]?.start ?? 0; en.jumpSong(st); setSong(sg); setSongBar(st); setLoopS(null); setSwingS(0); en.setSwing(0)
       setBpmS(sg.raw.bpm); en.setBpm(sg.raw.bpm)
@@ -273,11 +274,11 @@ export function SongForm({ song }: { song?: Song }) {
   const cur = live ? sectionOf(sg, P.songBar) : -1
   const cur_step = useStep('song')
   return <div>
-    {live && <StepGrid pattern={sg.bars[P.songBar]} current={P.playing ? cur_step : -1} />}
+    {live && sg.bars[P.songBar] && <StepGrid pattern={sg.bars[P.songBar]} current={P.playing ? cur_step : -1} />}
     <ol className="mt-3 divide-y divide-line">{sg.sections.map((s, i) => {
       const on = i === cur; const pct = on ? ((P.songBar - s.start + 1) / s.bars) * 100 : 0
       return <li key={i} className="flex items-center gap-2 py-1.5">
-        <button className={`flex-1 min-w-0 text-left text-sm ${on ? 'text-amber' : 'text-bone/70'}`} onClick={async () => { if (!live) { P.loadSong(sg, i); await P.toggle() } else P.jumpSection(i) }}>
+        <button className={`flex-1 min-w-0 text-left text-sm ${on ? 'text-amber' : 'text-bone/70'}`} onClick={async () => { if (!live) { await P.loadSong(sg, i); await P.toggle() } else P.jumpSection(i) }}>
           <span className="truncate block">{s.name}</span>
           {on && <span className="block mt-1 h-0.5 rounded bg-white/10 overflow-hidden"><span className="block h-full bg-amber transition-[width] duration-150" style={{ width: `${pct}%` }} /></span>}
         </button>

@@ -13,10 +13,16 @@ export function validatePattern(p: Pattern): string[] {
   return errs
 }
 
+/** Mix balance: hats and ride sit about 5 dB under kick/snare (×0.56), and off-beat cymbal strokes
+ *  get a natural softer accent (×0.78), so the time-keeping voices never cover the backbeat. */
+const CYMBAL_TRIM: Partial<Record<Voice, number>> = { tick: 0.56, open: 0.6, pedal: 0.6, ride: 0.56, rideBell: 0.65 }
 export function hitsAt(p: Pattern, step: number): Hit[] {
   const out: Hit[] = []
   for (const [voice, s] of Object.entries(p.tracks) as [Voice, string][]) {
-    const c = s?.[step]; if (c && VEL[c]) out.push({ voice, velocity: VEL[c], graces: c === 'f' ? 1 : c === 'r' ? 2 : 0 })
+    const c = s?.[step]; if (!c || !VEL[c]) continue
+    let v = VEL[c]; const trim = CYMBAL_TRIM[voice]
+    if (trim) v *= trim * (step % (p.stepsPerBeat || 1) === 0 ? 1 : 0.78)
+    out.push({ voice, velocity: v, graces: c === 'f' ? 1 : c === 'r' ? 2 : 0 })
   }
   return out
 }
