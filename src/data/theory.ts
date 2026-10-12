@@ -102,7 +102,7 @@ export const THEORY: Concept[] = [
         low: 'X.......X.x.....'.repeat(3) + 'X...........X.X.',
         back: '....X.......X...'.repeat(3) + 'XxXx............',
         tick: 'x.x.x.x.x.x.x.x.'.repeat(2) + 'xxxxxxxxxxxxxxxx' + '................',
-        open: 'X' + '.'.repeat(63),
+        crash1: 'X' + '.'.repeat(63),
         tomHi: '.'.repeat(48) + '....XxXx........',
         tomLo: '.'.repeat(48) + '........XxXxX.X.' }, { ticksPerStep: 3 }),
     ] },
@@ -114,7 +114,7 @@ export const THEORY: Concept[] = [
         back: 'X...X...X.X.XXXX' + '................',
         low: 'X...X...X...X...' + 'X.......X.......',
         tick: '................' + 'x.x.x.x.x.x.x.x.',
-        open: '................' + 'X...............' }, { ticksPerStep: 3 }),
+        crash1: '................' + 'X...............' }, { ticksPerStep: 3 }),
     ] },
 ]
 registerPatterns(THEORY.flatMap(c => c.patterns))

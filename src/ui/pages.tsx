@@ -5,30 +5,55 @@ import { HISTORY, SOURCES } from '../data/history'
 import { CULTURES, WORDING_NOTES, INTERLOCK_PRESETS, SOURCES_VERIFIED, type Strength } from '../data/cultures'
 import { ARTISTS } from '../data/artists'
 import { THEORY } from '../data/theory'
+import { SONGS } from '../data/songs'
+import { videosFor, type Video } from '../data/videos'
 import type { Pattern, Voice } from '../engine/types'
 import { PITCHED, noteName, midiToHz } from '../engine/pitch'
 import { TUNING_PRESETS, PITCH_TEXT, PITCH_PATTERNS } from '../data/pitch'
-import { LoadButtons, usePlayer } from './player'
+import { LoadButtons, usePlayer, StepGrid } from './player'
 
-const H1 = ({ t, sub }: { t: string; sub: string }) => <header className="mb-12"><h1 className="text-3xl font-semibold tracking-tight">{t}</h1><p className="mt-3 text-bone/60 leading-relaxed">{sub}</p></header>
-const Tag = ({ c }: { c: string }) => <span className="text-[11px] uppercase tracking-wider text-bone/50">{c}</span>
+const H1 = ({ t, sub }: { t: string; sub: string }) => <header className="mb-14 rise"><h1 className="text-[34px] leading-[1.1] font-semibold tracking-[-0.025em]">{t}</h1><p className="mt-4 text-[17px] text-bone/60 leading-relaxed max-w-[34ch]">{sub}</p></header>
+const Tag = ({ c }: { c: string }) => <span className="eyebrow">{c}</span>
 
 export function Library() {
-  const fams = [...new Set(RHYTHMS.map(r => r.family))]
+  const [tab, setTab] = useState<'styles' | 'songs'>('styles')
   return <>
-    <H1 t="Rhythm library" sub="Sixteen grooves. Each has notes on how it tends to feel and why. Play one, then add layers to hear how they combine." />
-    {fams.map(f => <section key={f} className="mb-14"><Tag c={f} />
-      {RHYTHMS.filter(r => r.family === f).map(r => <article key={r.pattern.id} className="mt-6 pb-8 border-b border-line last:border-0">
-        <h2 className="text-lg font-medium">{r.pattern.name}</h2>
-        <p className="mt-2 text-bone/80 leading-relaxed">{r.effect}</p>
-        <p className="mt-2 text-bone/60 leading-relaxed text-sm">{r.why}</p>
-        {r.evidence !== 'established' && <p className="mt-3 text-sm text-bone/60 border-l-2 border-amber pl-3"><span className="text-amber">Evidence: {r.evidence}.</span> {r.evidenceNote}</p>}
-        {r.evidence === 'established' && r.evidenceNote && <p className="mt-2 text-xs text-bone/40">{r.evidenceNote}</p>}
-        <LoadButtons pattern={r.pattern} />
-        {r.tryLayering && <p className="mt-2 text-xs text-bone/50">Try layering: {r.tryLayering.map(id => PATTERNS[id].name).join(', ')}</p>}
-      </article>)}
-    </section>)}
+    <H1 t="Rhythm library" sub="Grooves from many styles and songs, each with notes on how it feels and why. Play one, then add layers." />
+    <div className="mb-12 inline-flex p-0.5 rounded-full bg-white/[0.05]">{(['styles', 'songs'] as const).map(t => <button key={t} onClick={() => setTab(t)} className={`h-9 px-5 rounded-full text-sm capitalize transition-all duration-200 ${tab === t ? 'bg-bone text-ink' : 'text-bone/60'}`}>{t === 'songs' ? `Songs · ${SONGS.length}` : `Styles · ${RHYTHMS.length}`}</button>)}</div>
+    {tab === 'styles' ? <Styles /> : <Songs />}
   </>
+}
+
+function Styles() {
+  const fams = [...new Set(RHYTHMS.map(r => r.family))]
+  return <>{fams.map(f => <section key={f} className="mb-16 rise"><Tag c={f} />
+      {RHYTHMS.filter(r => r.family === f).map(r => <article key={r.pattern.id} className="mt-6 pb-10 border-b border-line last:border-0">
+        <h2 className="text-xl font-medium tracking-tight">{r.pattern.name}</h2>
+        <p className="mt-2.5 text-bone/80 leading-relaxed">{r.effect}</p>
+        <p className="mt-2 text-bone/55 leading-relaxed text-[15px]">{r.why}</p>
+        {r.evidence !== 'established' && <p className="mt-4 text-sm text-bone/60 border-l-2 border-amber pl-3 leading-relaxed"><span className="text-amber">Evidence: {r.evidence}.</span> {r.evidenceNote}</p>}
+        {r.evidence === 'established' && r.evidenceNote && <p className="mt-2 text-xs text-mute">{r.evidenceNote}</p>}
+        <LoadButtons pattern={r.pattern} />
+        {r.tryLayering && <p className="mt-3 text-xs text-mute">Try layering: {r.tryLayering.map(id => PATTERNS[id].name).join(', ')}</p>}
+      </article>)}
+    </section>)}</>
+}
+
+function Songs() {
+  return <div className="rise">
+    <p className="mb-10 text-sm text-mute leading-relaxed">Approximate transcriptions of each drum part's core groove, simplified for learning. Drum part only: no audio or lyrics. Tempos come from the research notes.</p>
+    {SONGS.map(s => <article key={s.raw.id} className="mb-10 pb-10 border-b border-line last:border-0">
+      <div className="flex items-baseline justify-between gap-3"><h2 className="text-xl font-medium tracking-tight">{s.raw.song}</h2><span className="text-xs text-mute tabular-nums shrink-0">{s.raw.timeSig}</span></div>
+      <p className="mt-1 text-sm text-bone/60">{s.raw.artist} · {s.raw.drummer}</p>
+      <span className="mt-3 inline-block text-[10px] uppercase tracking-[0.12em] text-amber/90 border border-amber/30 rounded-full px-2 py-0.5">Approximate transcription</span>
+      {s.raw.feel && <p className="mt-3 text-bone/80 leading-relaxed">{s.raw.feel}</p>}
+      {s.raw.whyItWorks && <p className="mt-2 text-[15px] text-bone/55 leading-relaxed">{s.raw.whyItWorks}</p>}
+      <StepGrid pattern={s.pattern} current={-1} />
+      <LoadButtons pattern={s.pattern} />
+      {s.fills.length > 0 && <p className="mt-2 text-xs text-mute">Includes {s.fills.length === 1 ? 'a fill' : `${s.fills.length} fills`}, available under Fill in the player.</p>}
+      {s.raw.source && <a href={s.raw.source} target="_blank" rel="noreferrer" className="mt-2 block text-xs text-mute underline underline-offset-2">Reference</a>}
+    </article>)}
+  </div>
 }
 
 export function Story() {
@@ -73,6 +98,23 @@ export function History() {
   </>
 }
 
+function VideoEmbed({ v }: { v: Video }) {
+  const [play, setPlay] = useState(false)
+  const [broken, setBroken] = useState(false)
+  if (broken) return null
+  return <figure className="mt-5">
+    <div className="relative aspect-video rounded-2xl overflow-hidden bg-white/[0.04] border border-white/[0.06]">
+      {play ? <iframe className="absolute inset-0 w-full h-full" src={`https://www.youtube-nocookie.com/embed/${v.videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`} title={v.title} loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+        : <button onClick={() => setPlay(true)} className="group absolute inset-0 w-full h-full" aria-label={`Play video: ${v.title}`}>
+          <img src={`https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`} alt="" loading="lazy" className="w-full h-full object-cover opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+            onError={() => setBroken(true)} onLoad={e => { if ((e.target as HTMLImageElement).naturalWidth <= 120) setBroken(true) }} />
+          <span className="absolute inset-0 grid place-items-center"><span className="w-14 h-14 rounded-full bg-ink/70 backdrop-blur grid place-items-center transition-transform duration-200 group-active:scale-90"><span className="ml-1 w-0 h-0 border-y-[9px] border-y-transparent border-l-[14px] border-l-bone" /></span></span>
+        </button>}
+    </div>
+    <figcaption className="mt-2 text-xs text-mute">{v.title} · {v.channel}{v.uploadType ? ` · ${v.uploadType}` : ''}</figcaption>
+  </figure>
+}
+
 export function Lens({ id, go }: { id?: string; go: (h: string) => void }) {
   const a = ARTISTS.find(x => x.id === id)
   if (!a) return <>
@@ -82,6 +124,7 @@ export function Lens({ id, go }: { id?: string; go: (h: string) => void }) {
   return <>
     <button onClick={() => go('lens')} className="text-sm text-bone/50 mb-8">← All drummers</button>
     <H1 t={a.name} sub={`${a.band} · ${a.era}`} />
+    {videosFor(a.name).length > 0 && <section className="mb-12"><Tag c="Watch" />{videosFor(a.name).map(v => <VideoEmbed key={v.videoId} v={v} />)}</section>}
     <section className="mb-10"><Tag c="Technique" /><ul className="mt-3 space-y-3 text-bone/75 leading-relaxed">{a.technique.map(t => <li key={t}>{t}</li>)}</ul></section>
     <section className="mb-10"><Tag c="Feeling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.feeling}</p></section>
     <section className="mb-12"><Tag c="Storytelling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.storytelling}</p></section>
@@ -132,5 +175,18 @@ export function Pitch() {
     </section>
     <section><Tag c="Melodic patterns" />{PITCH_PATTERNS.map(p => <div key={p.id} className="mt-5"><h3 className="text-sm font-medium">{p.name}</h3><LoadButtons pattern={p} /></div>)}
       <p className="mt-6 text-sm text-bone/50">See also the <a href="#/lens/carey" className="text-amber">Danny Carey</a> lens page.</p></section>
+  </>
+}
+
+export function About() {
+  return <>
+    <H1 t="About" sub="Pulse is a companion to Muse: a place to hear, layer and understand rhythm." />
+    <section className="mb-12"><Tag c="Acoustic samples" />
+      <p className="mt-3 text-bone/75 leading-relaxed">The acoustic kit uses the <a className="underline underline-offset-2" href="https://archive.org/details/SalamanderDrumkit" target="_blank" rel="noreferrer">Salamander Drumkit</a> by <strong className="font-medium">Alexander Holm</strong>. Its README licenses it under <a className="underline underline-offset-2" href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noreferrer">CC BY-SA 3.0</a>, and in 2022 the author <a className="underline underline-offset-2" href="https://rytmenpinne.wordpress.com/sounds-and-such/salamander-drumkit/" target="_blank" rel="noreferrer">declared it public domain</a>. The samples here are adapted: trimmed, shortened with fades, mono, 96 kbps MP3. They are shared under CC BY-SA 3.0 with credit to the author. Two velocity layers and two or three round-robin takes per voice. They load only when the acoustic kit first plays.</p>
+    </section>
+    <section className="mb-12"><Tag c="Synthesized kits" /><p className="mt-3 text-bone/75 leading-relaxed">The electronic, frame drum, Latin and tuned kits are synthesized in the browser with Tone.js (MIT license). They use no recordings.</p></section>
+    <section className="mb-12"><Tag c="Song patterns" /><p className="mt-3 text-bone/75 leading-relaxed">Song grooves are approximate, simplified transcriptions of the drum part only, for education. They include no audio or lyrics.</p></section>
+    <section className="mb-12"><Tag c="Video" /><p className="mt-3 text-bone/75 leading-relaxed">Videos are embedded from YouTube in privacy-enhanced mode (youtube-nocookie.com). Nothing loads until you tap play.</p></section>
+    <section><Tag c="Code" /><p className="mt-3 text-bone/75 leading-relaxed"><a className="underline underline-offset-2" href="https://github.com/nmpy7knjd8-code/rhythm" target="_blank" rel="noreferrer">github.com/nmpy7knjd8-code/rhythm</a></p></section>
   </>
 }

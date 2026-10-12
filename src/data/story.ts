@@ -6,11 +6,11 @@ const S = (id: string, name: string, tracks: Pattern['tracks']): Pattern => ({ i
 export const STORY_PATTERNS: Pattern[] = [
   S('st-intro', 'Intro: hats only', { tick: 'x.x.x.x.x.x.x.x.' }),
   S('st-intro-kick', 'Intro: kick enters', { low: 'X.......X.......' }),
-  S('st-verse', 'Verse: backbeat', { low: 'X.......X.x.....', back: '....X.......X...' }),
-  S('st-verse-hat', 'Verse: hats', { tick: 'x.x.x.x.x.x.x.x.' }),
+  S('st-verse', 'Verse: backbeat', { low: 'X.......X.x.....', back: '....X......gX...' }),
+  S('st-verse-hat', 'Verse: hats', { tick: '7.4.7.4.7.4.7.4.' }),
   S('st-build', 'Build: 16ths + ghosts', { low: 'X.....X.X.x...x.', back: '....X..g.g..X..g', tick: 'xxxxxxxxxxxxxxxx' }),
-  S('st-fill', 'Turnaround fill', { back: 'XxXx............', tomHi: '....XxXx........', tomLo: '........XxXxX.X.', low: 'X...........X.X.' }),
-  S('st-chorus', 'Chorus: ride + open hats', { low: 'X.x.....X.x.....', back: '....X.......X...', ride: 'X.x.X.x.X.x.X.x.', open: '..x...x...x...x.' }),
+  S('st-fill', 'Turnaround fill', { back: '5678............', tomHi: '....X7X7........', tomMid: '........X7X7....', tomLo: '............X7X.', low: 'X...........X.X.' }),
+  S('st-chorus', 'Chorus: ride + open hats', { low: 'X.x.....X.x.....', back: '....X.......X...', ride: '8.5.8.5.8.5.8.5.', rideBell: 'X.......X.......', open: '..6...6...6...6.' }),
   S('st-chorus-tom', 'Chorus: floor-tom drive', { tomLo: 'x.x.x.x.x.x.x.x.' }),
   S('st-break', 'Breakdown', { low: 'X...............', ride: 'X.......X.......' }),
 ]
@@ -19,11 +19,11 @@ registerPatterns(STORY_PATTERNS)
 export const STORY_ARRANGEMENT: Arrangement = { id: 'story', name: 'A drum part in five scenes', bpm: 104, sections: [
   { name: 'Introduce', bars: 2, patternIds: ['st-intro'], note: 'Hats alone: set the subdivision. The listener learns the "clock" before anything else.' },
   { name: 'Introduce', bars: 2, patternIds: ['st-intro', 'st-intro-kick'], note: 'The kick enters on 1 and 3: now there is weight and a sense of the downbeat.' },
-  { name: 'Establish', bars: 4, patternIds: ['st-verse', 'st-verse-hat'], note: 'Snare backbeat completes the core triangle (low / high / time). Leave space for a singer.' },
+  { name: 'Establish', bars: 4, crash: true, patternIds: ['st-verse', 'st-verse-hat'], note: 'Snare backbeat completes the core triangle (low / high / time). Leave space for a singer.' },
   { name: 'Develop', bars: 3, patternIds: ['st-build'], note: 'Density rises: 16th hats, ghost notes, an extra kick. Same skeleton, more motion.' },
   { name: 'Develop', bars: 1, patternIds: ['st-fill'], note: 'Fill: break the loop, falling pitch, signal the arrival.' },
-  { name: 'Interact / climax', bars: 4, patternIds: ['st-chorus', 'st-chorus-tom'], note: 'New timbres (ride, open hats, floor tom) answer each other. Highest energy.' },
-  { name: 'Release', bars: 2, patternIds: ['st-break'], note: 'Strip back to almost nothing; the silence is now loud because of what came before.' },
+  { name: 'Interact / climax', bars: 4, crash: true, patternIds: ['st-chorus', 'st-chorus-tom'], note: 'New timbres (ride, open hats, floor tom) answer each other. Highest energy.' },
+  { name: 'Release', bars: 2, crash: true, patternIds: ['st-break'], note: 'Strip back to almost nothing; the silence is now loud because of what came before.' },
 ] }
 
 export const STORY_TEXT: { h: string; p: string }[] = [

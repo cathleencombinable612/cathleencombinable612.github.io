@@ -1,7 +1,12 @@
 /** Abstract voices. Kits map these to concrete sounds, so one pattern plays on any kit. */
-export type Voice = 'low' | 'back' | 'tick' | 'open' | 'ride' | 'tomHi' | 'tomLo' | 'accent' | 'shaker' | 'bell'
+export type Voice =
+  | 'low' | 'back' | 'tick' | 'open' | 'pedal' | 'ride' | 'rideBell' | 'crash1' | 'crash2' | 'china'
+  | 'tomHi' | 'tomMid' | 'tomLo' | 'accent' | 'shaker' | 'bell'
 
-/** Step grid string per voice: 'X' accent, 'x' normal, 'g' ghost, '.' rest. */
+export const VOICES: Voice[] = ['crash1', 'crash2', 'china', 'ride', 'rideBell', 'open', 'tick', 'pedal', 'tomHi', 'tomMid', 'tomLo', 'back', 'accent', 'low', 'bell', 'shaker']
+
+/** Step grid string per voice. '.' rest; 'X' accent (1.0), 'x' normal (0.75), 'g' ghost (0.3);
+ *  digits '1'–'9' set velocity n/9; 'f' = flam (grace + main), 'r' = ruff/drag (two graces + main). */
 export type Track = Partial<Record<Voice, string>>
 
 export interface Pattern {
@@ -19,9 +24,11 @@ export interface Pattern {
    *  Set explicitly for odd meters (7/8 in 16ths: steps 14, ticksPerStep 3) and polymeter. */
   ticksPerStep?: number
   suggestedSwing?: number
+  /** Where the default tempo comes from (shown as a note). */
+  bpmNote?: string
 }
 
-export interface Hit { voice: Voice; velocity: number }
+export interface Hit { voice: Voice; velocity: number; graces?: number }
 
 export interface Layer {
   id: string
@@ -31,15 +38,25 @@ export interface Layer {
   solo: boolean
 }
 
-export interface Section { name: string; bars: number; patternIds: string[]; note: string }
+export interface Section { name: string; bars: number; patternIds: string[]; note: string; crash?: boolean }
 export interface Arrangement { id: string; name: string; bpm: number; sections: Section[] }
 
+export interface SampleLayer { /** upper velocity bound 0..1 */ vel: number; files: string[] }
 export interface KitVoice {
-  kind: 'membrane' | 'noise' | 'metal'
+  kind: 'membrane' | 'noise' | 'metal' | 'sample'
+  /** sample kind: velocity layers, each with round-robin files (paths relative to sample base URL) */
+  layers?: SampleLayer[]
+  /** synth used until samples have loaded */
+  fallback?: KitVoice
+  /** sample playback rate (pitch shift), default 1 */
+  rate?: number
   pitch?: number // Hz
-  decay: number // seconds
+  decay?: number // seconds (synth kinds)
   tone?: number // filter cutoff Hz for noise / harmonicity for metal
   pitchDecay?: number
   gain?: number
 }
 export interface Kit { id: string; name: string; blurb: string; voices: Record<Voice, KitVoice> }
+
+/** A fill replaces the groove for its bar. crashAfter = crash on the next downbeat. */
+export interface Fill { pattern: Pattern; crashAfter: boolean; description: string }

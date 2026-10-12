@@ -6,7 +6,8 @@ export interface ArtistLens {
   technique: string[]; feeling: string; storytelling: string
   tryThis: { pattern: Pattern; note: string }[]
 }
-const P = (id: string, name: string, steps: number, spb: number, bpm: number, tracks: Pattern['tracks'], swingable = false, ticksPerStep?: number): Pattern => ({ id, name, steps, stepsPerBeat: spb, suggestedBpm: bpm, tracks, swingable, ticksPerStep })
+const NOTES: Record<string, string> = { 'peart-groove': 'Tom Sawyer verse ≈ 88 BPM (song-pattern research).', 'peart-fill': 'Matches the groove.', 'bonham-halftime': 'Fool in the Rain ≈ 130 BPM (song-pattern research).', 'bonham-triplet': 'Approximate rock tempo for the kick-triplet idea; illustrative.', 'ringo-broken': 'Ticket to Ride ≈ 123 BPM (song-pattern research).', 'ringo-toms': 'Come Together ≈ 82 BPM (song-pattern research).', 'copeland-hats': 'One-drop reggae ≈ 75 BPM (song-pattern research); Walking on the Moon is faster (≈146).', 'allen-afrobeat': 'Afrobeat ≈ 112 BPM (song-pattern research).', 'allen-shaker': 'Matches the afrobeat groove.', 'carey-78': 'Schism 7/8 section ≈ 107 BPM (song-pattern research).', 'carey-987': 'Lateralus chorus cycle ≈ 130 BPM (song-pattern research).' }
+const P = (id: string, name: string, steps: number, spb: number, bpm: number, tracks: Pattern['tracks'], swingable = false, ticksPerStep?: number): Pattern => ({ id, name, steps, stepsPerBeat: spb, suggestedBpm: bpm, bpmNote: NOTES[id], tracks, swingable, ticksPerStep })
 
 export const ARTISTS: ArtistLens[] = [
   { id: 'peart', name: 'Neil Peart', band: 'Rush', era: '1974–2015',
@@ -14,8 +15,8 @@ export const ARTISTS: ArtistLens[] = [
     feeling: 'Precision as expression. The excitement comes from intricate, deliberate architecture played with full commitment, not from looseness.',
     storytelling: 'He treated a drum part like a lyric (he was also Rush\'s lyricist): motifs return, fills are signposts placed at structural seams, and the kit\'s range (high toms to gong) maps to dramatic peaks.',
     tryThis: [
-      { pattern: P('peart-groove', 'Peart-style composed groove', 16, 4, 92, { low: 'X..x..X...X.....', back: '....X.......X...', tick: 'x.x.x.x.x.x.x.x.', tomHi: '..............xx' }), note: 'In the spirit of his rock grooves (not a transcription). A fixed tom pickup at the end of every bar acts as a motif.' },
-      { pattern: P('peart-fill', 'Melodic tom cascade', 16, 4, 92, { back: 'Xx..............', tomHi: '..XxXx..........', tomLo: '......XxXxXx....', low: 'X...........X.X.' }), note: 'Layer with the groove above, then mute it, and hear how the fill works as a melody on its own.' } ] },
+      { pattern: P('peart-groove', 'Peart-style composed groove', 16, 4, 88, { low: 'X..x..X...X.....', back: '....X.......X...', tick: '7.4.7.4.7.4.7.4.', tomHi: '..............X7'}), note: 'In the spirit of his rock grooves (not a transcription). A fixed tom pickup at the end of every bar acts as a motif.' },
+      { pattern: P('peart-fill', 'Melodic tom cascade', 16, 4, 88, { back: 'Xx..............', tomHi: '..XxXx..........', tomLo: '......XxXxXx....', low: 'X...........X.X.' }), note: 'Layer with the groove above, then mute it, and hear how the fill works as a melody on its own.' } ] },
   { id: 'bonham', name: 'John Bonham', band: 'Led Zeppelin', era: '1968–1980',
     technique: ['Huge, open-tuned sound and a heavy right foot: fast kick-drum triplets were a signature (e.g. "Good Times Bad Times").', 'Behind-the-beat placement that makes slow grooves feel enormous ("When the Levee Breaks").', 'Deep R&B and funk roots. His half-time shuffle on "Fool in the Rain" draws on Bernard Purdie\'s "Purdie shuffle."'],
     feeling: 'Weight and swing at once: heavy without being stiff. Space between notes is as important as the notes.',
@@ -28,21 +29,21 @@ export const ARTISTS: ArtistLens[] = [
     feeling: 'Groove in service of the song. He chose the part that made the song feel like itself, not the most impressive part.',
     storytelling: 'His parts often change with each section of a song (verse figure, chorus straight beat, signature fill into the bridge), so the drums mark the song\'s form. Few fills, each memorable.',
     tryThis: [
-      { pattern: P('ringo-broken', 'Broken tom/snare figure', 16, 4, 122, { low: 'X.......X.......', back: '..X.X.....X.X...', tomLo: 'X..x....X..x....', tick: 'x.x.x.x.x.x.x.x.' }), note: 'Inspired by the lopsided feel of "Ticket to Ride" (approximation).' },
-      { pattern: P('ringo-toms', 'Damped tom phrase', 16, 4, 84, { tomHi: 'x.x.............', tomLo: '....x.x.x.......', low: 'X.......X..x....', tick: '..........x.x.x.' }, true), note: 'In the spirit of "Come Together": the toms carry the hook. Try the frame kit.' } ] },
+      { pattern: P('ringo-broken', 'Broken tom/snare figure', 16, 4, 123, { low: 'X.......X.......', back: '..X.X.....X.X...', tomLo: 'X..x....X..x....', tick: 'x.x.x.x.x.x.x.x.' }), note: 'Inspired by the lopsided feel of "Ticket to Ride" (approximation).' },
+      { pattern: P('ringo-toms', 'Damped tom phrase', 16, 4, 82, { tomHi: 'x.x.............', tomLo: '....x.x.x.......', low: 'X.......X..x....', tick: '..........x.x.x.' }, true), note: 'In the spirit of "Come Together": the toms carry the hook. Try the frame kit.' } ] },
   { id: 'copeland', name: 'Stewart Copeland', band: 'The Police', era: '1977–1986, 2007–08',
     technique: ['Reggae vocabulary (one-drop, beat 1 left open) blended with punk energy.', 'Hi-hat as lead instrument: busy, accented, constantly varied, with splash cymbal punctuation.', 'High-tuned, cracking snare, often played on the rim, and a tendency to push ahead of the beat.'],
     feeling: 'Nervous, bright, restless energy over a spacious foundation.',
     storytelling: 'Verses often sit in sparse reggae-derived grooves, and choruses shift to driving rock. The genre switch itself is the story arc.',
     tryThis: [
-      { pattern: P('copeland-hats', 'One-drop with busy hats', 16, 4, 80, { low: '........X.......', accent: '........X.......', tick: 'x.xxx.x.xxx.x.xx', open: '......x.......x.' }, true), note: 'An empty downbeat underneath, a busy hi-hat above. Mute the hats to hear the plain one-drop.' } ] },
+      { pattern: P('copeland-hats', 'One-drop with busy hats', 16, 4, 75, { low: '........X.......', accent: '........X.......', tick: '7.3573.47.3573.4', open: '......6.......6.'}, true), note: 'An empty downbeat underneath, a busy hi-hat above. Mute the hats to hear the plain one-drop.' } ] },
   { id: 'allen', name: 'Tony Allen', band: 'Fela Kuti & Africa 70; solo', era: '1960s–2020',
     technique: ['Co-creator of Afrobeat with Fela Kuti, who said Afrobeat would not exist without him.', 'Four-way independence. Influenced by jazz drummers such as Max Roach and Art Blakey, he spread interlocking parts across hats, snare, kick and toms.', 'A light touch, open hi-hat accents on off-beats, and very few cymbal crashes.'],
     feeling: 'Floating, circular and danceable. The groove is dense but never crowded, because every limb leaves room for the others.',
     storytelling: 'Long songs that develop slowly. He kept the core pattern fixed and let small variations (an open hat here, a tom there) mark time over 10+ minutes. Brian Eno called him "perhaps the greatest drummer who has ever lived" (as reported by Reuters, 2008, and repeated in BBC obituaries, 2020).',
     tryThis: [
-      { pattern: P('allen-afrobeat', 'Afrobeat interlock (approximation)', 16, 4, 108, { tick: 'x.xxx.xxx.xxx.xx', open: '..x...x...x...x.', low: 'X.....X.x.......', back: '....x..g.g..X.g.', tomLo: '............x..x' }, true), note: 'Mute each voice in turn: each limb is a separate line.' },
-      { pattern: P('allen-shaker', 'Shekere-style layer', 16, 4, 108, { shaker: 'x.Xx.xX.x.Xx.xX.' }), note: 'Layer on top with the Latin kit to hear the percussion section.' } ] },
+      { pattern: P('allen-afrobeat', 'Afrobeat interlock (approximation)', 16, 4, 112, { tick: '6.457.456.457.45', open: '..7...7...7...7.', low: 'X.....X.x.......', back: '....7..g.g..X.g.', tomLo: '............x..x' }, true), note: 'Mute each voice in turn: each limb is a separate line.' },
+      { pattern: P('allen-shaker', 'Shekere-style layer', 16, 4, 112, { shaker: 'x.Xx.xX.x.Xx.xX.' }), note: 'Layer on top with the Latin kit to hear the percussion section.' } ] },
   { id: 'carey', name: 'Danny Carey', band: 'Tool', era: '1990–present',
     technique: [
       'Melodic tom work: a large kit with many toms, tuned so fills and ostinatos work as melodic lines. He also plays pitched electronic pads alongside the acoustic drums.',
@@ -53,7 +54,7 @@ export const ARTISTS: ArtistLens[] = [
     feeling: 'Ritual, hypnotic weight. Long, patient ostinatos that build trance-like intensity, with sudden, precise eruptions.',
     storytelling: 'Parts evolve across long songs. A tom ostinato appears, gets re-grouped against the meter, thickens, and finally resolves when the cycles realign. Melodic tom lines often shadow the bass or guitar riff, so the drums carry harmony as well as time.',
     tryThis: [
-      { pattern: P('carey-78', 'Melodic tom ostinato in 7/8 (2+2+3)', 14, 14, 112, { low: 'X...X...X.....', tomLo: '..x...x...x.x.', tomHi: '.x...x...x.x.x', back: '......X.......', tick: 'x.x.x.x.x.x.x.' }, false, 3), note: 'Load the Tuned toms kit and a preset on Kit as Pitch first, so the toms sing a phrase. An illustration of the approach, not a transcription.' },
-      { pattern: P('carey-987', '9+8+7 phrase (Lateralus-style)', 24, 24, 150, { low: 'X........X.......X......', tomLo: '...x..x.....x..x....x.x.', tomHi: '.x..x..x.x..x..x.x..x...', accent: 'X........X.......X......' }, false, 6), note: 'Three bars of 9/8, 8/8 and 7/8 in eighths. Accents mark each bar line, so the phrase gets shorter as it goes.' } ] },
+      { pattern: P('carey-78', 'Melodic tom ostinato in 7/8 (2+2+3)', 14, 14, 107, { low: 'X...X...X.....', tomLo: '..x...x...x.x.', tomHi: '.x...x...x.x.x', back: '......X.......', tick: 'x.x.x.x.x.x.x.' }, false, 3), note: 'Load the Tuned toms kit and a preset on Kit as Pitch first, so the toms sing a phrase. An illustration of the approach, not a transcription.' },
+      { pattern: P('carey-987', '9+8+7 phrase (Lateralus-style)', 24, 24, 130, { low: 'X........X.......X......', tomLo: '...x..x.....x..x....x.x.', tomHi: '.x..x..x.x..x..x.x..x...', accent: 'X........X.......X......' }, false, 6), note: 'Three bars of 9/8, 8/8 and 7/8 in eighths. Accents mark each bar line, so the phrase gets shorter as it goes.' } ] },
 ]
 registerPatterns(ARTISTS.flatMap(a => a.tryThis.map(t => t.pattern)))

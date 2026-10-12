@@ -1,0 +1,11 @@
+Acoustic drum samples: Salamander Drumkit by Alexander Holm
+Source: https://archive.org/details/SalamanderDrumkit  (author page: https://rytmenpinne.wordpress.com/sounds-and-such/salamander-drumkit/)
+
+Original license (README in the archive): Creative Commons Attribution-ShareAlike 3.0
+  http://creativecommons.org/licenses/by-sa/3.0/
+The author later declared the kit public domain ("As of 4.3.2022, this is now public domain!") on the page above.
+
+These files are adapted from the originals: leading silence trimmed, shortened with fade-out, mixed to mono,
+and encoded as 96 kbps MP3. To be safe under either statement, these adapted samples are offered under
+CC BY-SA 3.0 with attribution to Alexander Holm. The rest of this app's code is unaffected (the share-alike
+condition applies to the samples themselves).

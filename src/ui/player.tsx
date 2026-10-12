@@ -1,18 +1,27 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { RhythmEngine } from '../engine/audio'
-import type { Arrangement, Layer, Pattern } from '../engine/types'
+import { RhythmEngine, preloadKit, setSampleBase } from '../engine/audio'
+import type { Arrangement, Fill, Layer, Pattern, Voice } from '../engine/types'
+import { VOICES } from '../engine/types'
+import { velocityOf, ticksPerStep } from '../engine/pattern'
 import { KITS } from '../data/kits'
 import { PATTERNS } from '../data/rhythms'
+import { FILLS, FILL_EVERY } from '../data/fills'
+import { SONGS } from '../data/songs'
 import { applyTuning, type Tuning } from '../engine/pitch'
+
+setSampleBase(`${import.meta.env.BASE_URL}samples/acoustic/`)
+export const ALL_FILLS: Fill[] = [...FILLS, ...SONGS.flatMap(s => s.fills)]
 
 interface Ctx {
   layers: Layer[]; playing: boolean; bpm: number; swing: number; kitId: string; section: number | null; arrangement: Arrangement | null
+  tuning: Tuning; setTuning: (t: Tuning) => void
+  fillId: string | null; fillEvery: number; setFill: (id: string | null, every?: number) => void; inFill: boolean
+  kitProgress: number // 0..1 sample loading
   load: (p: Pattern, add?: boolean) => void
   loadArrangement: (a: Arrangement) => void
   update: (id: string, patch: Partial<Layer>) => void
   remove: (id: string) => void
-  tuning: Tuning; setTuning: (t: Tuning) => void
-  toggle: () => void; setBpm: (n: number) => void; setSwing: (n: number) => void; setKit: (id: string) => void
+  toggle: () => Promise<void>; setBpm: (n: number) => void; setSwing: (n: number) => void; setKit: (id: string) => void
   subscribe: RhythmEngine['subscribe']
 }
 const C = createContext<Ctx>(null!)
@@ -29,23 +38,41 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [arrangement, setArr] = useState<Arrangement | null>(null)
   const [section, setSection] = useState<number | null>(null)
   const [tuning, setTuning] = useState<Tuning>({})
+  const [fillId, setFillId] = useState<string | null>(null)
+  const [fillEvery, setFillEvery] = useState(4)
+  const [inFill, setInFill] = useState(false)
+  const [kitProgress, setKitProgress] = useState(0)
 
   const e = useCallback(() => {
-    if (!eng.current) { eng.current = new RhythmEngine(); eng.current.setKit(KITS[0]); eng.current.onSection = setSection }
+    if (!eng.current) {
+      eng.current = new RhythmEngine(); eng.current.setKit(KITS[0]); eng.current.onSection = setSection
+      eng.current.onBar = (_b, f) => setInFill(f)
+    }
     return eng.current
   }, [])
 
   useEffect(() => { if (!arrangement) e().setLayers(layers) }, [layers, arrangement, e])
-  useEffect(() => { e().setKit(applyTuning(KITS.find(k => k.id === kitId)!, tuning)) }, [kitId, tuning, e])
+  useEffect(() => {
+    const kit = KITS.find(k => k.id === kitId)!
+    e().setKit(applyTuning(kit, tuning))
+  }, [kitId, tuning, e])
+  useEffect(() => { e().setFill(ALL_FILLS.find(f => f.pattern.id === fillId) ?? null, fillId ? fillEvery : 0) }, [fillId, fillEvery, e])
+
+  const preload = useCallback((id: string) => {
+    const kit = KITS.find(k => k.id === id)!
+    if (!Object.values(kit.voices).some(v => v.kind === 'sample')) { setKitProgress(1); return }
+    void preloadKit(kit, (d, t) => setKitProgress(d / t))
+  }, [])
 
   const value = useMemo<Ctx>(() => ({
-    layers, playing, bpm, swing, kitId, section, arrangement, tuning, setTuning,
+    layers, playing, bpm, swing, kitId, section, arrangement, tuning, setTuning, fillId, fillEvery, inFill, kitProgress,
+    setFill: (id, every) => { setFillId(id); if (every !== undefined) setFillEvery(every) },
     load: (p, add) => {
       e().setArrangement(null); setArr(null); setSection(null)
       const l: Layer = { id: `l${n++}`, pattern: p, volume: 0.85, mute: false, solo: false }
       setLayers(prev => (add ? [...prev, l] : [l]))
       if (!add && p.suggestedBpm) { setBpmS(p.suggestedBpm); e().setBpm(p.suggestedBpm) }
-      if (!add && p.suggestedSwing !== undefined) { setSwingS(p.suggestedSwing); e().setSwing(p.suggestedSwing) }
+      if (!add) { const s = p.suggestedSwing ?? 0; setSwingS(s); e().setSwing(s) }
     },
     loadArrangement: a => {
       setArr(a); setBpmS(a.bpm); e().setBpm(a.bpm); setLayers([])
@@ -56,39 +83,100 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     remove: id => setLayers(ls => ls.filter(l => l.id !== id)),
     toggle: async () => {
       const en = e()
-      if (en.playing) { en.stop(); setPlaying(false); setSection(null) } else { await en.start(); setPlaying(true) }
+      if (en.playing) { en.stop(); setPlaying(false); setSection(null); setInFill(false) }
+      else { preload(kitId); await en.start(); setPlaying(true) }
     },
     setBpm: v => { setBpmS(v); e().setBpm(v) },
     setSwing: v => { setSwingS(v); e().setSwing(v) },
-    setKit: id => setKitId(id),
+    setKit: id => { setKitId(id); setKitProgress(0); preload(id) },
     subscribe: l => e().subscribe(l),
-  }), [layers, playing, bpm, swing, kitId, section, arrangement, tuning, e])
+  }), [layers, playing, bpm, swing, kitId, section, arrangement, tuning, fillId, fillEvery, inFill, kitProgress, e, preload])
   return <C.Provider value={value}>{children}</C.Provider>
 }
 
-/** Load / add buttons used throughout content pages. */
+// ---------- shared pieces ----------
+
 export function LoadButtons({ pattern }: { pattern: Pattern }) {
   const { load, layers, toggle, playing } = usePlayer()
   const active = layers.some(l => l.pattern.id === pattern.id)
   return (
-    <div className="flex gap-2 mt-3">
-      <button className="h-10 px-4 rounded-full bg-amber text-ink text-sm font-medium" onClick={async () => { load(pattern); if (!playing) await toggle() }}>Play</button>
-      <button className="h-10 px-4 rounded-full border border-line text-sm text-bone/80" onClick={() => load(pattern, true)}>{active ? 'Add again' : '+ Layer'}</button>
+    <div className="flex items-center gap-2 mt-4">
+      <button className="btn-primary" onClick={async () => { load(pattern); if (!playing) await toggle() }}>
+        <PlayGlyph /> Play
+      </button>
+      <button className="btn-ghost" onClick={() => load(pattern, true)}>{active ? 'Add again' : 'Add layer'}</button>
+      {pattern.suggestedBpm && <span className="ml-auto text-xs text-mute tabular-nums" title={pattern.bpmNote}>{pattern.suggestedBpm} BPM{pattern.bpmNote ? ' ⓘ' : ''}</span>}
+    </div>
+  )
+}
+const PlayGlyph = () => <span className="inline-block w-0 h-0 border-y-[5px] border-y-transparent border-l-[8px] border-l-current" />
+
+const VOICE_LABEL: Record<Voice, string> = {
+  crash1: 'Crash', crash2: 'Crash 2', china: 'China', ride: 'Ride', rideBell: 'Bell', open: 'Open HH', tick: 'Hi-hat', pedal: 'Pedal HH',
+  tomHi: 'Tom 1', tomMid: 'Tom 2', tomLo: 'Floor', back: 'Snare', accent: 'Rim', low: 'Kick', bell: 'Cowbell', shaker: 'Shaker',
+}
+
+/** Velocity-aware step grid. Rows = voices used, bars show velocity, playhead column glows. */
+export function StepGrid({ pattern, current }: { pattern: Pattern; current: number }) {
+  const rows = VOICES.filter(v => pattern.tracks[v])
+  const dense = pattern.steps > 16
+  return (
+    <div className={`mt-3 ${dense ? 'overflow-x-auto -mx-1 px-1' : ''}`}>
+      <div className="space-y-1" style={{ minWidth: dense ? pattern.steps * 11 : undefined }}>
+        {rows.map(v => (
+          <div key={v} className="flex items-center gap-2">
+            <span className="w-12 shrink-0 text-[10px] uppercase tracking-wider text-mute">{VOICE_LABEL[v]}</span>
+            <div className="flex-1 flex gap-[2px]">
+              {Array.from({ length: pattern.steps }, (_, i) => {
+                const c = pattern.tracks[v]![i]; const vel = velocityOf(c)
+                const beat = i % pattern.stepsPerBeat === 0 && i > 0
+                return (
+                  <span key={i} className={`relative flex-1 h-5 rounded-[3px] overflow-hidden transition-colors duration-75 ${beat ? 'ml-[3px]' : ''} ${i === current ? 'bg-amber/25' : 'bg-white/[0.04]'}`}>
+                    {vel > 0 && <span className={`absolute inset-x-0 bottom-0 rounded-[3px] transition-[background-color,transform] duration-100 ${i === current ? 'bg-amber scale-y-110' : 'bg-bone/70'}`} style={{ height: `${Math.round(25 + vel * 75)}%` }} />}
+                    {(c === 'f' || c === 'r') && <span className="absolute top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-ink" />}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
 
-function Steps({ layer }: { layer: Layer }) {
+function useStep(id: string) {
   const { subscribe } = usePlayer()
   const [cur, setCur] = useState(-1)
-  useEffect(() => subscribe(s => setCur(s[layer.id] ?? (Object.keys(s).length ? cur : -1))), [subscribe, layer.id]) // eslint-disable-line
-  const p = layer.pattern
+  useEffect(() => subscribe(s => { if (!Object.keys(s).length) setCur(-1); else if (s[id] !== undefined) setCur(s[id]) }), [subscribe, id])
+  return cur
+}
+
+function LayerCard({ layer }: { layer: Layer }) {
+  const P = usePlayer()
+  const cur = useStep(layer.id)
+  const dim = P.layers.some(l => l.solo) ? !layer.solo : layer.mute
   return (
-    <div className="flex gap-[3px] mt-2">
-      {Array.from({ length: p.steps }, (_, i) => {
-        const hit = Object.values(p.tracks).some(t => t && t[i] !== '.')
-        return <span key={i} className={`h-2 flex-1 rounded-full ${i === cur ? 'bg-amber' : hit ? 'bg-bone/50' : 'bg-line'} ${i % p.stepsPerBeat === 0 && i ? 'ml-1' : ''}`} />
-      })}
+    <div className={`card transition-opacity duration-200 ${dim ? 'opacity-40' : ''}`}>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="text-[15px] font-medium truncate">{layer.pattern.name}</div>
+          <div className="text-[11px] text-mute tabular-nums">{layer.pattern.steps} steps · {(layer.pattern.steps * ticksPerStep(layer.pattern)) / 12} beats</div>
+        </div>
+        <button aria-pressed={layer.mute} onClick={() => P.update(layer.id, { mute: !layer.mute })} className={`chip-sq ${layer.mute ? 'bg-bone text-ink' : ''}`}>M</button>
+        <button aria-pressed={layer.solo} onClick={() => P.update(layer.id, { solo: !layer.solo })} className={`chip-sq ${layer.solo ? 'bg-amber text-ink border-amber' : ''}`}>S</button>
+        <button aria-label="Remove layer" onClick={() => P.remove(layer.id)} className="chip-sq border-transparent text-mute">✕</button>
+      </div>
+      <StepGrid pattern={layer.pattern} current={cur} />
+      <input type="range" min={0} max={1} step={0.01} value={layer.volume} onChange={e => P.update(layer.id, { volume: +e.target.value })} className="slider mt-3" aria-label="Layer volume" />
+    </div>
+  )
+}
+
+function Segmented<T extends string | number>({ value, options, onChange }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void }) {
+  return (
+    <div className="inline-flex p-0.5 rounded-full bg-white/[0.05]">
+      {options.map(o => <button key={String(o.v)} onClick={() => onChange(o.v)} className={`h-8 px-3.5 rounded-full text-xs transition-all duration-200 ${value === o.v ? 'bg-bone text-ink shadow' : 'text-bone/60'}`}>{o.l}</button>)}
     </div>
   )
 }
@@ -96,46 +184,65 @@ function Steps({ layer }: { layer: Layer }) {
 export function PlayerBar() {
   const P = usePlayer()
   const [open, setOpen] = useState(false)
-  const title = P.arrangement ? `${P.arrangement.name}${P.section !== null ? ` · ${P.arrangement.sections[P.section].name}` : ''}` : P.layers.length ? P.layers.map(l => l.pattern.name).join(' + ') : 'Nothing loaded'
-  const shown = P.arrangement ? [] : P.layers
+  const first = P.layers[0]?.pattern
+  const title = P.arrangement ? P.arrangement.name : P.layers.length ? P.layers.map(l => l.pattern.name).join(' + ') : 'Choose a rhythm'
+  const sub = P.arrangement && P.section !== null ? P.arrangement.sections[P.section].name : P.inFill ? 'Fill' : `${KITS.find(k => k.id === P.kitId)!.name}`
+  const kitLoading = P.kitId === 'acoustic' && P.kitProgress < 1 && P.playing
   return (
-    <div className="fixed bottom-0 inset-x-0 bg-ink/95 backdrop-blur border-t border-line pb-[env(safe-area-inset-bottom)]">
-      <div className="max-w-xl mx-auto px-5">
-        {open && (
-          <div className="pt-5 pb-2 space-y-5 max-h-[60vh] overflow-y-auto">
-            {shown.map(l => (
-              <div key={l.id}>
-                <div className="flex items-center gap-3">
-                  <span className="flex-1 text-sm truncate">{l.pattern.name}</span>
-                  <button aria-label="mute" onClick={() => P.update(l.id, { mute: !l.mute })} className={`w-9 h-9 rounded-full text-xs ${l.mute ? 'bg-bone text-ink' : 'border border-line text-bone/60'}`}>M</button>
-                  <button aria-label="solo" onClick={() => P.update(l.id, { solo: !l.solo })} className={`w-9 h-9 rounded-full text-xs ${l.solo ? 'bg-amber text-ink' : 'border border-line text-bone/60'}`}>S</button>
-                  <button aria-label="remove" onClick={() => P.remove(l.id)} className="w-9 h-9 text-bone/40">×</button>
+    <>
+      <div onClick={() => setOpen(false)} className={`fixed inset-0 bg-black/50 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
+      <div className="fixed bottom-0 inset-x-0 z-30 pb-[env(safe-area-inset-bottom)]">
+        <div className="max-w-xl mx-auto px-3 pb-3">
+          <div className="rounded-[22px] bg-[#141416]/90 backdrop-blur-xl border border-white/[0.07] shadow-2xl shadow-black/60 overflow-hidden">
+            <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+              <div className="overflow-hidden">
+                <div className="max-h-[68vh] overflow-y-auto px-4 pt-5 pb-2 space-y-6">
+                  {!P.arrangement && (P.layers.length ? <div className="space-y-3">{P.layers.map(l => <LayerCard key={l.id} layer={l} />)}</div>
+                    : <p className="text-sm text-mute">Load a rhythm, then add layers to hear how parts combine.</p>)}
+                  {P.arrangement && <ol className="space-y-1.5 text-sm">{P.arrangement.sections.map((s, i) => <li key={i} className={`transition-colors ${P.section === i ? 'text-amber' : 'text-mute'}`}>{s.name} · {s.bars} bars</li>)}</ol>}
+
+                  <section>
+                    <Label>Tempo <span className="text-bone tabular-nums">{P.bpm}</span> <span className="normal-case tracking-normal">BPM</span></Label>
+                    <input type="range" min={40} max={260} value={P.bpm} onChange={e => P.setBpm(+e.target.value)} className="slider" aria-label="Tempo" />
+                    {first?.bpmNote && <p className="mt-1.5 text-[11px] text-mute leading-snug">{first.bpmNote}</p>}
+                  </section>
+                  <section>
+                    <Label>Swing <span className="text-bone tabular-nums">{Math.round(P.swing * 100)}%</span></Label>
+                    <input type="range" min={0} max={1} step={0.01} value={P.swing} onChange={e => P.setSwing(+e.target.value)} className="slider" aria-label="Swing" />
+                  </section>
+                  <section>
+                    <Label>Kit</Label>
+                    <div className="flex flex-wrap gap-2">{KITS.map(k => <button key={k.id} onClick={() => P.setKit(k.id)} className={`chip ${P.kitId === k.id ? 'chip-on' : ''}`}>{k.name}</button>)}</div>
+                    {P.kitId === 'acoustic' && P.kitProgress > 0 && P.kitProgress < 1 && <div className="mt-2 h-0.5 rounded bg-white/10 overflow-hidden"><div className="h-full bg-amber transition-[width] duration-200" style={{ width: `${P.kitProgress * 100}%` }} /></div>}
+                  </section>
+                  <section>
+                    <div className="flex items-center justify-between mb-2"><Label className="mb-0">Fill</Label>
+                      <Segmented value={P.fillId ? P.fillEvery : 0} options={FILL_EVERY.map(v => ({ v, l: v ? `Every ${v}` : 'Off' }))} onChange={v => v ? P.setFill(P.fillId ?? FILLS[0].pattern.id, v) : P.setFill(null)} /></div>
+                    <div className="flex flex-wrap gap-2">{FILLS.map(f => <button key={f.pattern.id} title={f.description} onClick={() => P.setFill(f.pattern.id)} className={`chip ${P.fillId === f.pattern.id ? 'chip-on' : ''}`}>{f.pattern.name}</button>)}</div>
+                    {SONGS.some(s => s.fills.length) && <div className="flex flex-wrap gap-2 mt-2">{SONGS.flatMap(s => s.fills).map(f => <button key={f.pattern.id} onClick={() => P.setFill(f.pattern.id)} className={`chip ${P.fillId === f.pattern.id ? 'chip-on' : ''}`}>{f.pattern.name}</button>)}</div>}
+                    {P.fillId && <p className="mt-2 text-[11px] text-mute">{ALL_FILLS.find(f => f.pattern.id === P.fillId)?.description}</p>}
+                  </section>
                 </div>
-                <input type="range" min={0} max={1} step={0.01} value={l.volume} onChange={e => P.update(l.id, { volume: +e.target.value })} className="w-full mt-1" aria-label="volume" />
-                <Steps layer={l} />
               </div>
-            ))}
-            {!shown.length && !P.arrangement && <p className="text-sm text-bone/50">Load a rhythm from the library, then add more layers to hear how they combine.</p>}
-            <div className="grid grid-cols-2 gap-4 text-xs text-bone/60">
-              <label>Tempo · {P.bpm} BPM<input type="range" min={40} max={260} value={P.bpm} onChange={e => P.setBpm(+e.target.value)} className="w-full" /></label>
-              <label>Swing · {Math.round(P.swing * 100)}%<input type="range" min={0} max={1} step={0.01} value={P.swing} onChange={e => P.setSwing(+e.target.value)} className="w-full" /></label>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {KITS.map(k => <button key={k.id} onClick={() => P.setKit(k.id)} className={`h-9 px-3 rounded-full text-xs ${P.kitId === k.id ? 'bg-bone text-ink' : 'border border-line text-bone/70'}`}>{k.name}</button>)}
+            <div className="flex items-center gap-3 h-[68px] px-3">
+              <button aria-label={P.playing ? 'Stop' : 'Play'} onClick={P.toggle} disabled={!P.layers.length && !P.arrangement}
+                className={`relative w-12 h-12 shrink-0 rounded-full bg-amber text-ink grid place-items-center transition-transform active:scale-90 disabled:opacity-25 ${P.playing ? 'pulse-ring' : ''}`}>
+                {P.playing ? <span className="w-3.5 h-3.5 rounded-[2px] bg-ink" /> : <span className="ml-1 w-0 h-0 border-y-[8px] border-y-transparent border-l-[13px] border-l-ink" />}
+              </button>
+              <button className="flex-1 min-w-0 text-left" onClick={() => setOpen(o => !o)}>
+                <div className="text-[15px] font-medium truncate">{title}</div>
+                <div className="text-xs text-mute truncate">{kitLoading ? `Loading samples ${Math.round(P.kitProgress * 100)}%` : sub}</div>
+              </button>
+              <span className="text-xs tabular-nums text-mute">{P.bpm}</span>
+              <button onClick={() => setOpen(o => !o)} aria-label={open ? 'Close mixer' : 'Open mixer'} className="w-10 h-10 grid place-items-center rounded-full text-bone/70 active:scale-90 transition-transform">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={`transition-transform duration-300 ${open ? 'rotate-180' : ''}`}><path d="M6 15l6-6 6 6" /></svg>
+              </button>
             </div>
           </div>
-        )}
-        <div className="flex items-center gap-4 h-16">
-          <button aria-label={P.playing ? 'stop' : 'play'} onClick={P.toggle} disabled={!P.layers.length && !P.arrangement} className="w-12 h-12 rounded-full bg-amber text-ink grid place-items-center disabled:opacity-30">
-            {P.playing ? <span className="w-3.5 h-3.5 bg-ink" /> : <span className="ml-1 w-0 h-0 border-y-[8px] border-y-transparent border-l-[13px] border-l-ink" />}
-          </button>
-          <button className="flex-1 text-left min-w-0" onClick={() => setOpen(o => !o)}>
-            <div className="text-sm truncate">{title}</div>
-            <div className="text-xs text-bone/50">{P.bpm} BPM · {KITS.find(k => k.id === P.kitId)!.name}</div>
-          </button>
-          <button onClick={() => setOpen(o => !o)} className="text-xs text-bone/60 h-10 px-2">{open ? 'Close' : 'Mix'}</button>
         </div>
       </div>
-    </div>
+    </>
   )
 }
+const Label = ({ children, className = '' }: { children: ReactNode; className?: string }) => <div className={`mb-2 text-[11px] uppercase tracking-[0.12em] text-mute flex gap-1.5 items-baseline ${className}`}>{children}</div>

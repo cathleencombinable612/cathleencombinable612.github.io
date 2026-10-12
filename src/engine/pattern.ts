@@ -1,7 +1,10 @@
 import type { Hit, Pattern, Voice, Layer } from './types'
 
 export const TICKS_PER_BAR = 48
-const VEL: Record<string, number> = { X: 1, x: 0.75, g: 0.3 }
+const VEL: Record<string, number> = { X: 1, x: 0.75, g: 0.3, f: 0.85, r: 0.85 }
+for (let d = 1; d <= 9; d++) VEL[String(d)] = d / 9
+
+export const velocityOf = (c: string | undefined): number => (c && VEL[c]) || 0
 
 export function validatePattern(p: Pattern): string[] {
   const errs: string[] = []
@@ -13,7 +16,7 @@ export function validatePattern(p: Pattern): string[] {
 export function hitsAt(p: Pattern, step: number): Hit[] {
   const out: Hit[] = []
   for (const [voice, s] of Object.entries(p.tracks) as [Voice, string][]) {
-    const c = s?.[step]; if (c && VEL[c]) out.push({ voice, velocity: VEL[c] })
+    const c = s?.[step]; if (c && VEL[c]) out.push({ voice, velocity: VEL[c], graces: c === 'f' ? 1 : c === 'r' ? 2 : 0 })
   }
   return out
 }

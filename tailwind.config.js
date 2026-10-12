@@ -1,4 +1,4 @@
 /** @type {import('tailwindcss').Config} */
 export default { content: ['./index.html','./src/**/*.{ts,tsx}'], theme: { extend: {
-  colors: { ink:'#0b0b0c', panel:'#151517', line:'#2a2a2e', amber:'#ffb000', bone:'#f2efe8', ember:'#ff5a36' },
+  colors: { ink:'#0a0a0b', panel:'#141416', line:'rgba(255,255,255,0.08)', amber:'#ffb000', bone:'#f4f1ea', mute:'rgba(244,241,234,0.5)' },
   fontFamily: { mono: ['ui-monospace','SFMono-Regular','Menlo','monospace'] } } }, plugins: [] }
