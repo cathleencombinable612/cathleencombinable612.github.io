@@ -338,6 +338,28 @@ export function PlayerBar() {
 const Label = ({ children, className = '' }: { children: ReactNode; className?: string }) => <div className={`mb-2 text-[11px] uppercase tracking-[0.12em] text-mute flex gap-1.5 items-baseline ${className}`}>{children}</div>
 
 /** Section list for the loaded song: tap a row to jump, tap the loop icon to repeat that section. */
+
+/** Muted palette for bar and section variation cues (amber stays reserved for "now"). */
+const VAR_COLORS = ['#7d8fa3', '#8fa38a', '#b08a78', '#9a86a8', '#b3a37a', '#7aa39f', '#a3787f', '#8a8f9a']
+const barSig = (b: Pattern) => JSON.stringify([b.tracks, b.sub ?? null, b.timeSig ?? ''])
+/** Per bar: letter index within its section, whether it departs from the section's main bar (variation, fill, crash).
+ *  Per section: a group index shared by sections with identical bar content (Verse 2 = Verse 1). */
+function variation(sg: Song) {
+  const bars: { k: number; accent: boolean }[] = []; const secGroup: number[] = []; const seen = new Map<string, number>()
+  for (const s of sg.sections) {
+    const sigs = sg.bars.slice(s.start, s.start + s.bars).map(barSig); const ids = new Map<string, number>(); const count = new Map<string, number>()
+    sigs.forEach(x => { if (!ids.has(x)) ids.set(x, ids.size); count.set(x, (count.get(x) ?? 0) + 1) })
+    const main = [...count.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+    sg.bars.slice(s.start, s.start + s.bars).forEach((b, i) => bars.push({ k: ids.get(sigs[i])!, accent: sigs[i] !== main && count.get(sigs[i]) === 1 && (count.get(main!) ?? 0) >= Math.max(2, sigs.length / 3) && !!b }))
+    // a section repeats an earlier one when it has the same length and at least 75% of its bars match bar-for-bar
+    let g = -1
+    for (const [k, gi] of seen) { const o = k.split('\u0001'); if (o.length === sigs.length && o.filter((x, j) => x === sigs[j]).length >= 0.75 * sigs.length) { g = gi; break } }
+    if (g < 0) { g = seen.size; seen.set(sigs.join('\u0001'), g) }
+    secGroup.push(g)
+  }
+  return { bars, secGroup, repeats: new Set(secGroup.filter((g, i) => secGroup.indexOf(g) !== i)) }
+}
+
 export function SongForm({ song }: { song?: Song }) {
   const P = usePlayer()
   const sg = song ?? P.song!
@@ -345,16 +367,28 @@ export function SongForm({ song }: { song?: Song }) {
   const cur = live ? sectionOf(sg, P.songBar) : -1
   const cur_step = useStep('song')
   const fd = sg.raw.firstDrumBar ?? 0
+  const V = useMemo(() => sg.bars.length ? variation(sg) : null, [sg, sg.bars.length])
   return <div>
     {live && fd > 0 && P.songBar < fd && <button onClick={() => P.jumpBar(fd)} className="mb-2 h-9 px-4 rounded-full bg-white/[0.08] text-xs text-bone/80">Skip to drums ↓ bar {fd + 1}</button>}
     {live && sg.bars[P.songBar] && <StepGrid pattern={sg.bars[P.songBar]} current={P.playing ? cur_step : -1} />}
     <ol className="mt-3 divide-y divide-line">{sg.sections.map((s, i) => {
       const on = i === cur; const pct = on ? ((P.songBar - s.start + 1) / s.bars) * 100 : 0
       return <li key={i} className="flex items-center gap-2 py-1.5">
-        <button className={`flex-1 min-w-0 text-left text-sm ${on ? 'text-amber' : 'text-bone/70'}`} onClick={async () => { if (!live) { await P.loadSong(sg, i); await P.toggle() } else P.jumpSection(i) }}>
-          <span className="truncate block">{s.name}</span>
-          {on && <span className="block mt-1 h-0.5 rounded bg-white/10 overflow-hidden"><span className="block h-full bg-amber transition-[width] duration-150" style={{ width: `${pct}%` }} /></span>}
-        </button>
+        {V && <span title={V.repeats.has(V.secGroup[i]) ? 'Same bars as another section' : undefined} className="w-1.5 self-stretch my-1 rounded-full shrink-0" style={{ background: VAR_COLORS[V.secGroup[i] % VAR_COLORS.length], opacity: V.repeats.has(V.secGroup[i]) ? 0.9 : 0.35 }} />}
+        <div className="flex-1 min-w-0">
+          <button className={`w-full text-left text-sm ${on ? 'text-amber' : 'text-bone/70'}`} onClick={async () => { if (!live) { await P.loadSong(sg, i); await P.toggle() } else P.jumpSection(i) }}>
+            <span className="truncate block">{s.name}{V && V.repeats.has(V.secGroup[i]) && V.secGroup.indexOf(V.secGroup[i]) !== i && <span className="ml-1.5 text-[10px] text-mute">= {sg.sections[V.secGroup.indexOf(V.secGroup[i])].name}</span>}</span>
+          </button>
+          {V && (on || s.bars <= 64) && <div className={`flex gap-[2px] mt-1 ${on ? 'h-2.5' : 'h-1.5'}`} aria-label={`${s.name} bar variations`}>
+            {V.bars.slice(s.start, s.start + s.bars).map((b, j) => { const n = s.start + j; const now = live && n === P.songBar
+              return <button key={j} aria-label={`Bar ${j + 1}, pattern ${String.fromCharCode(65 + b.k)}`} onClick={() => live ? P.jumpBar(n) : undefined}
+                className={`relative flex-1 min-w-[3px] rounded-[2px] ${now ? 'ring-1 ring-amber' : ''}`} style={{ background: VAR_COLORS[b.k % VAR_COLORS.length], opacity: on ? (live && n <= P.songBar ? 1 : 0.55) : 0.4 }}>
+                {b.accent && <span className="absolute -top-[3px] left-1/2 -translate-x-1/2 w-[3px] h-[3px] rounded-full bg-amber" />}
+                {on && s.bars <= 16 && <span className="absolute inset-0 grid place-items-center text-[7px] leading-none text-ink/70 font-medium">{String.fromCharCode(65 + Math.min(b.k, 25))}</span>}
+              </button> })}
+          </div>}
+          {!V && on && <span className="block mt-1 h-0.5 rounded bg-white/10 overflow-hidden"><span className="block h-full bg-amber transition-[width] duration-150" style={{ width: `${pct}%` }} /></span>}
+        </div>
         <span className="text-[11px] tabular-nums text-mute">{s.bars}</span>
         {live && <button aria-label={`Loop ${s.name}`} aria-pressed={P.loopSection === i} onClick={() => P.setLoopSection(P.loopSection === i ? null : i)} className={`w-8 h-8 grid place-items-center rounded-full text-xs ${P.loopSection === i ? 'bg-amber text-ink' : 'text-mute'}`}>↻</button>}
       </li>
