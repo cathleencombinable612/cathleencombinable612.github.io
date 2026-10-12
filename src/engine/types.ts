@@ -28,6 +28,8 @@ export interface Pattern {
   barTicks?: number
   /** Display time signature, e.g. '7/8'. */
   timeSig?: string
+  /** Laid-back feel: every note later by lateMs, plus a repeatable ±jitterMs human wobble. */
+  humanize?: { lateMs: number; jitterMs: number }
   /** URL for the default tempo's source. */
   bpmSource?: string
   /** Category for browsing. */

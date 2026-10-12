@@ -106,7 +106,8 @@ export class RhythmEngine {
     }
     if (this.songTick % tps === 0) {
       const step = this.songTick / tps; const stepSec = tickSec * tps
-      const t = time + swingOffset(p, step, this.swing) * stepSec
+      let t = time + swingOffset(p, step, this.swing) * stepSec
+      if (p.humanize) { const r = Math.sin((this.songBar * 97 + step) * 12.9898) * 43758.5453; t += (p.humanize.lateMs + ((r - Math.floor(r)) * 2 - 1) * p.humanize.jitterMs) / 1000 }
       for (const h of hitsAt(p, step)) this.play(SONG_ID, h.voice, t, h.velocity, h.graces, stepSec)
       const b = this.songBar; Tone.getDraw().schedule(() => this.listeners.forEach(f => f({ [SONG_ID]: step }, b)), time)
     }
@@ -163,7 +164,7 @@ export class RhythmEngine {
     this.trace?.push({ t, src: channelId, voice, bar: this.bar })
     const inst = this.inst(channelId, voice); if (!inst) return
     if (voice === 'tick' || voice === 'pedal') this.channels.get(channelId)?.insts.open?.choke?.(t)
-    const g = Math.min(0.03, stepSec / 4)
+    const g = Math.max(0.02, Math.min(0.028, stepSec / 2)) // flam/drag grace spacing: ~28 ms, never past half a step
     for (let i = graces; i > 0; i--) inst.trigger(Math.max(0, t - g * i), vel * 0.35)
     inst.trigger(t, vel)
   }

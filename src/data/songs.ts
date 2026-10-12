@@ -30,7 +30,7 @@ function stringTracks(b: Record<string, string>): Track {
     t[v] = t[v] ? [...str].map((c, i) => (c !== '.' && (t[v]![i] === '.' || c > t[v]![i]) ? c : t[v]![i])).join('') : str }
   return t
 }
-interface SectionFile { name: string; bars: Record<string, string>[]; ticksPerStep: number[]; timeSig: string[]; bpm: number[]; confidence?: string }
+interface SectionFile { humanize?: { lateMs: number; jitterMs: number }; name: string; bars: Record<string, string>[]; ticksPerStep: number[]; timeSig: string[]; bpm: number[]; confidence?: string }
 /** Fetch the full bar-by-bar part for a song (kept out of the main bundle). */
 export async function loadSongBars(song: Song): Promise<Song> {
   if (song.bars.length) return song
@@ -41,7 +41,7 @@ export async function loadSongBars(song: Song): Promise<Song> {
     const steps = Object.values(b)[0]?.length ?? 16
     const [num] = (sec.timeSig[i] ?? '4/4').split('/').map(Number)
     const spb = Math.max(1, Math.round(steps / (sec.timeSig[i]?.endsWith('/8') ? num / (num % 3 === 0 ? 3 : 1) : num)))
-    bars.push({ id: `song-${song.raw.id}-b${bars.length}`, name: song.raw.song, steps, stepsPerBeat: spb, ticksPerStep: sec.ticksPerStep[i], suggestedBpm: sec.bpm[i], timeSig: sec.timeSig[i], tracks: stringTracks(b) })
+    bars.push({ id: `song-${song.raw.id}-b${bars.length}`, name: song.raw.song, steps, stepsPerBeat: spb, ticksPerStep: sec.ticksPerStep[i], suggestedBpm: sec.bpm[i], timeSig: sec.timeSig[i], humanize: sec.humanize, tracks: stringTracks(b) })
     void si
   }))
   song.bars = bars

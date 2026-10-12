@@ -110,6 +110,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setKit: id => { setKitId(id); setKitProgress(0); preload(id) },
     subscribe: l => e().subscribe(l),
   }), [layers, playing, bpm, swing, kitId, section, arrangement, tuning, fillId, fillEvery, inFill, kitProgress, song, songBar, loopSection, e, preload])
+  useEffect(() => { (window as unknown as { __pulseLoadSong?: (id: string, sec?: number) => Promise<void> }).__pulseLoadSong = async (id, sec) => { const sg = SONGS.find(x => x.raw.id === id); if (sg) await value.loadSong(sg, sec) } }, [value])
   return <C.Provider value={value}>{children}</C.Provider>
 }
 
