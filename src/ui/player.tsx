@@ -267,7 +267,7 @@ function FillPicker() {
 }
 
 /** Bottom sheet: grab handle, close button, swipe down or tap outside to close. */
-function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
+function Sheet({ open, onClose, children, title, subtitle }: { open: boolean; onClose: () => void; children: ReactNode; title?: string; subtitle?: string }) {
   const [dy, setDy] = useState(0); const y0 = useRef<number | null>(null); const dyR = useRef(0)
   useEffect(() => { if (!open) setDy(0) }, [open])
   useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }; addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [onClose])
@@ -277,7 +277,7 @@ function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void
       <div className="max-w-xl mx-auto rounded-t-[24px] bg-[#141416] border-t border-white/[0.08] shadow-2xl shadow-black pb-[env(safe-area-inset-bottom)]">
         <div className="sticky top-0 z-10 flex items-center h-14 pl-4 pr-1 border-b border-white/[0.06] touch-none cursor-grab rounded-t-[24px] bg-[#141416]" onTouchStart={e => { y0.current = e.touches[0].clientY }} onTouchMove={e => { if (y0.current !== null) { dyR.current = Math.max(0, e.touches[0].clientY - y0.current); setDy(dyR.current) } }} onTouchEnd={() => { if (dyR.current > 70) onClose(); y0.current = null; dyR.current = 0; setDy(0) }}>
           <span className="absolute left-1/2 top-2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-white/30" />
-          <span className="text-[13px] text-mute">Player</span>
+          <div className="min-w-0 pr-2"><div className="text-[14px] font-medium truncate">{title || 'Player'}</div>{subtitle && <div className="text-[11px] text-mute truncate">{subtitle}</div>}</div>
           <button aria-label="Close player" onClick={onClose} className="ml-auto h-12 pl-4 pr-3 flex items-center gap-1.5 rounded-full text-sm text-bone/85 active:scale-95">
             Close <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
           </button>
@@ -314,7 +314,7 @@ export function PlayerBar() {
         <button aria-label="Browse rhythms" onClick={() => show(sg ? 'now' : 'browse')} className="w-10 h-10 shrink-0 grid place-items-center rounded-full bg-white/[0.08] text-xl active:scale-90">{sg ? '⌃' : '+'}</button>
       </div>
     </div></div>
-    <Sheet open={open} onClose={() => setOpen(false)}>
+    <Sheet open={open} onClose={() => setOpen(false)} title={sg ? sg.raw.song : title} subtitle={sg ? `${sg.raw.artist} · ${sg.raw.drummer}` : undefined}>
       <div className="mb-4"><Segmented value={tab} onChange={setTab} options={[{ v: 'now', l: 'Now playing' }, { v: 'kit', l: 'Kit view' }, ...(sg ? [] : [{ v: 'browse' as const, l: 'Browse' }]), { v: 'sound', l: 'Sound' }]} /></div>
       {tab === 'now' && <div className="space-y-3">
         {sg && <SongForm />}
