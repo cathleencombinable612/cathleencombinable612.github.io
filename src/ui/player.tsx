@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { RhythmEngine, preloadKit, setSampleBase } from '../engine/audio'
 import type { Arrangement, Fill, Layer, Pattern, Voice } from '../engine/types'
 import { VOICES } from '../engine/types'
+import { KitView } from './kitview'
 import { velocityOf, ticksPerStep, VARIANTS } from '../engine/pattern'
 import { KITS } from '../data/kits'
 import { PATTERNS, RHYTHMS } from '../data/rhythms'
@@ -82,7 +83,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setBpmS(sg.raw.bpm); en.setBpm(sg.raw.bpm)
     },
     jumpBar: b => { e().jumpSong(b); if (!e().playing) setSongBar(b) },
-    jumpSection: i => { if (!song) return; const st = song.sections[i].start; e().jumpSong(st); if (!e().playing) setSongBar(st)
+    jumpSection: i => { if (!song) return; const st = song.sections[i].start; e().jumpSong(st, true); if (!e().playing) setSongBar(st)
       if (loopSection !== null && loopSection !== i) { setLoopS(i); e().setSongLoop([st, st + song.sections[i].bars]) } },
     setLoopSection: i => { setLoopS(i); e().setSongLoop(i === null || !song ? null : [song.sections[i].start, song.sections[i].start + song.sections[i].bars]) },
     load: (p, add) => {
@@ -226,7 +227,9 @@ function useCatalog(): Item[] {
 
 /** Searchable list of every rhythm and song. ▶ replaces, + stacks a layer. */
 function Browser({ onPicked }: { onPicked?: () => void }) {
-  const P = usePlayer(); const all = useCatalog()
+  const P = usePlayer(); const all0 = useCatalog()
+  // Trance & pulse sits last here too, matching Styles; journeys belong to Story, not the song list
+  const all = useMemo(() => [...all0.filter(i => i.cat !== 'Trance & pulse'), ...all0.filter(i => i.cat === 'Trance & pulse')].filter(i => !i.song?.raw.id.startsWith('j-')), [all0])
   const [q, setQ] = useState(''); const [cat, setCat] = useState(''); const [meter, setMeter] = useState('')
   const cats = useMemo(() => [...new Set(all.map(i => i.cat))], [all])
   const meters = useMemo(() => [...new Set(all.map(i => i.meter))].sort((a, b) => parseInt(a) - parseInt(b) || a.localeCompare(b)), [all])
@@ -289,14 +292,15 @@ function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void
 export function PlayerBar() {
   const P = usePlayer()
   const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState<'now' | 'browse' | 'sound'>('now')
+  const [tab, setTab] = useState<'now' | 'kit' | 'browse' | 'sound'>('now')
   const sg = P.song; const si = sg ? sectionOf(sg, P.songBar) : 0
   const title = sg ? sg.raw.song : P.arrangement ? P.arrangement.name : P.layers.length ? P.layers.map(l => l.pattern.name).join(' + ') : 'Choose a rhythm'
   const sub = sg && sg.sections[si] ? `${sg.sections[si].name} · bar ${P.songBar - sg.sections[si].start + 1}/${sg.sections[si].bars}${P.loopSection !== null ? ' · looping' : ''}` : P.arrangement && P.section !== null ? P.arrangement.sections[P.section].name : P.inFill ? 'Fill' : P.layers.length ? `${P.layers.length} layer${P.layers.length > 1 ? 's' : ''} · ${KITS.find(k => k.id === P.kitId)!.name}` : 'Tap + to browse'
   const kitLoading = P.kitProgress < 1 && P.playing && KITS.find(k => k.id === P.kitId)!.voices.low.kind === 'sample'
   const show = (t: typeof tab) => { setTab(t); setOpen(true) }
+  useEffect(() => { if (sg && tab === 'browse') setTab('now') }, [sg, tab])
   return <>
-    <div className="sticky top-16 z-20 -mx-6 px-4 pb-2 bg-ink/85 backdrop-blur-xl">
+    <div className="fixed inset-x-0 bottom-0 z-30 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] bg-ink/85 backdrop-blur-xl border-t border-white/[0.06]"><div className="max-w-xl mx-auto">
       <div className="flex items-center gap-3 h-14 px-2 rounded-2xl bg-white/[0.05] border border-white/[0.06]">
         <button aria-label={P.playing ? 'Stop' : 'Play'} onClick={P.toggle} disabled={!P.layers.length && !P.arrangement && !P.song}
           className={`relative w-10 h-10 shrink-0 rounded-full bg-amber text-ink grid place-items-center active:scale-90 transition-transform disabled:opacity-25 ${P.playing ? 'pulse-ring' : ''}`}>
@@ -307,11 +311,11 @@ export function PlayerBar() {
           <div className="text-[11px] text-mute truncate">{kitLoading ? `Loading samples ${Math.round(P.kitProgress * 100)}%` : sub}</div>
         </button>
         <button onClick={() => show('sound')} className="text-xs tabular-nums text-mute px-1 h-10">{P.bpm}</button>
-        <button aria-label="Browse rhythms" onClick={() => show('browse')} className="w-10 h-10 shrink-0 grid place-items-center rounded-full bg-white/[0.08] text-xl active:scale-90">+</button>
+        <button aria-label="Browse rhythms" onClick={() => show(sg ? 'now' : 'browse')} className="w-10 h-10 shrink-0 grid place-items-center rounded-full bg-white/[0.08] text-xl active:scale-90">{sg ? '⌃' : '+'}</button>
       </div>
-    </div>
+    </div></div>
     <Sheet open={open} onClose={() => setOpen(false)}>
-      <div className="mb-4"><Segmented value={tab} onChange={setTab} options={[{ v: 'now', l: 'Now playing' }, { v: 'browse', l: 'Browse' }, { v: 'sound', l: 'Sound' }]} /></div>
+      <div className="mb-4"><Segmented value={tab} onChange={setTab} options={[{ v: 'now', l: 'Now playing' }, { v: 'kit', l: 'Kit view' }, ...(sg ? [] : [{ v: 'browse' as const, l: 'Browse' }]), { v: 'sound', l: 'Sound' }]} /></div>
       {tab === 'now' && <div className="space-y-3">
         {sg && <SongForm />}
         {sg?.raw.tuning && <p className="text-[11px] text-mute">Tuning ({sg.raw.tuning.status}): {sg.raw.tuning.note}</p>}
@@ -319,7 +323,8 @@ export function PlayerBar() {
         {!sg && !P.arrangement && (P.layers.length ? P.layers.map(l => <LayerCard key={l.id} layer={l} />) : <p className="text-sm text-mute">Nothing loaded. Open Browse to pick a rhythm, then tap + to stack layers.</p>)}
         {!sg && !P.arrangement && <button className="w-full h-11 rounded-xl border border-dashed border-white/15 text-sm text-bone/70" onClick={() => setTab('browse')}>+ Add a layer</button>}
       </div>}
-      {tab === 'browse' && <Browser />}
+      {tab === 'kit' && <KitView bars={sg ? sg.bars : P.layers.map(l => l.pattern)} />}
+      {tab === 'browse' && !sg && <Browser />}
       {tab === 'sound' && <div className="space-y-6">
         <section><Label>Tempo <span className="text-bone tabular-nums">{P.bpm}</span> <span className="normal-case tracking-normal">BPM</span></Label>
           <input type="range" min={40} max={260} value={P.bpm} onChange={e => P.setBpm(+e.target.value)} className="slider" aria-label="Tempo" />
@@ -371,24 +376,25 @@ export function SongForm({ song }: { song?: Song }) {
     {live && sg.bars[P.songBar] && <StepGrid pattern={sg.bars[P.songBar]} current={P.playing ? cur_step : -1} />}
     <ol className="mt-3 divide-y divide-line">{sg.sections.map((s, i) => {
       const on = i === cur; const pct = on ? ((P.songBar - s.start + 1) / s.bars) * 100 : 0
-      return <li key={i} className="flex items-center gap-2 py-1.5">
+      const go = async () => { if (!live) { await P.loadSong(sg, i); await P.toggle() } else P.jumpSection(i) }
+      return <li key={i} role="button" tabIndex={0} aria-label={`Jump to ${s.name}`} onClick={go} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); void go() } }} className="flex items-center gap-2 py-2 cursor-pointer active:bg-white/[0.03] rounded-lg">
         {V && <span title={V.repeats.has(V.secGroup[i]) ? 'Same bars as another section' : undefined} className="w-1.5 self-stretch my-1 rounded-full shrink-0" style={{ background: VAR_COLORS[V.secGroup[i] % VAR_COLORS.length], opacity: V.repeats.has(V.secGroup[i]) ? 0.9 : 0.35 }} />}
         <div className="flex-1 min-w-0">
-          <button className={`w-full text-left text-sm ${on ? 'text-amber' : 'text-bone/70'}`} onClick={async () => { if (!live) { await P.loadSong(sg, i); await P.toggle() } else P.jumpSection(i) }}>
+          <div className={`w-full text-left text-sm ${on ? 'text-amber' : 'text-bone/70'}`}>
             <span className="truncate block">{s.name}{V && V.repeats.has(V.secGroup[i]) && V.secGroup.indexOf(V.secGroup[i]) !== i && <span className="ml-1.5 text-[10px] text-mute">= {sg.sections[V.secGroup.indexOf(V.secGroup[i])].name}</span>}</span>
-          </button>
-          {V && (on || s.bars <= 64) && <div className={`flex gap-[2px] mt-1 ${on ? 'h-2.5' : 'h-1.5'}`} aria-label={`${s.name} bar variations`}>
+          </div>
+          {V && (on || s.bars <= 64) && <div className={`flex gap-[2px] mt-1 ${on ? 'h-6' : 'h-1.5 pointer-events-none'}`} aria-label={`${s.name} bar variations`}>
             {V.bars.slice(s.start, s.start + s.bars).map((b, j) => { const n = s.start + j; const now = live && n === P.songBar
-              return <button key={j} aria-label={`Bar ${j + 1}, pattern ${String.fromCharCode(65 + b.k)}`} onClick={() => live ? P.jumpBar(n) : undefined}
+              return <button key={j} aria-label={`Bar ${j + 1}, pattern ${String.fromCharCode(65 + b.k)}`} onClick={ev => { if (!on || !live) return; ev.stopPropagation(); P.jumpBar(n) }}
                 className={`relative flex-1 min-w-[3px] rounded-[2px] ${now ? 'ring-1 ring-amber' : ''}`} style={{ background: VAR_COLORS[b.k % VAR_COLORS.length], opacity: on ? (live && n <= P.songBar ? 1 : 0.55) : 0.4 }}>
                 {b.accent && <span className="absolute -top-[3px] left-1/2 -translate-x-1/2 w-[3px] h-[3px] rounded-full bg-amber" />}
-                {on && s.bars <= 16 && <span className="absolute inset-0 grid place-items-center text-[7px] leading-none text-ink/70 font-medium">{String.fromCharCode(65 + Math.min(b.k, 25))}</span>}
+                {on && s.bars <= 16 && <span className="absolute inset-0 grid place-items-center text-[9px] leading-none text-ink/70 font-medium">{String.fromCharCode(65 + Math.min(b.k, 25))}</span>}
               </button> })}
           </div>}
           {!V && on && <span className="block mt-1 h-0.5 rounded bg-white/10 overflow-hidden"><span className="block h-full bg-amber transition-[width] duration-150" style={{ width: `${pct}%` }} /></span>}
         </div>
         <span className="text-[11px] tabular-nums text-mute">{s.bars}</span>
-        {live && <button aria-label={`Loop ${s.name}`} aria-pressed={P.loopSection === i} onClick={() => P.setLoopSection(P.loopSection === i ? null : i)} className={`w-8 h-8 grid place-items-center rounded-full text-xs ${P.loopSection === i ? 'bg-amber text-ink' : 'text-mute'}`}>↻</button>}
+        {live && <button aria-label={`Loop ${s.name}`} aria-pressed={P.loopSection === i} onClick={ev => { ev.stopPropagation(); P.setLoopSection(P.loopSection === i ? null : i) }} className={`w-8 h-8 grid place-items-center rounded-full text-xs ${P.loopSection === i ? 'bg-amber text-ink' : 'text-mute'}`}>↻</button>}
       </li>
     })}</ol>
   </div>

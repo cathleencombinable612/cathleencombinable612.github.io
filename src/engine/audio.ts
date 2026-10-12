@@ -71,6 +71,8 @@ function makeInst(kv: KitVoice, out: Tone.ToneAudioNode): Inst {
 interface Channel { gain: Tone.Gain; insts: Partial<Record<Voice, Inst>> }
 export type StepListener = (layerSteps: Record<string, number>, bar: number) => void
 const FILL_ID = 'fill', FX_ID = 'fx', SONG_ID = 'song'
+/** Visual hit bus: Kit view subscribes; callbacks fire via Tone.Draw at the hit's audio time. */
+export const hitBus = new Set<(voice: Voice, vel: number, variant?: string) => void>()
 
 /** Thin Tone.js wrapper. All timing runs on Tone.Transport at a 48-tick-per-bar grid. */
 export class RhythmEngine {
@@ -96,8 +98,11 @@ export class RhythmEngine {
   setSong(bars: Pattern[] | null) { this.song = bars ? { bars, loop: null } : null; this.songBar = 0; this.songTick = 0; this.pendingJump = null }
   setSongLoop(loop: [number, number] | null) { if (this.song) this.song.loop = loop }
   /** Jump to a bar: immediately if stopped, otherwise at the next bar line. */
-  jumpSong(bar: number) { if (!this.playing) { this.songBar = bar; this.songTick = 0 } else this.pendingJump = bar }
+  jumpSong(bar: number, onBeat = false) { if (!this.playing) { this.songBar = bar; this.songTick = 0 } else if (onBeat) this.pendingBeatJump = bar; else this.pendingJump = bar }
+  /** Bar to restart at on the next beat (12 ticks = one quarter), set by section taps. */
+  private pendingBeatJump: number | null = null
   private songStep(time: number, tickSec: number) {
+    if (this.pendingBeatJump !== null && this.songTick % 12 === 0) { this.songBar = this.pendingBeatJump; this.songTick = 0; this.pendingBeatJump = null; this.pendingJump = null }
     const song = this.song!; const p = song.bars[this.songBar]; const tps = ticksPerStep(p); const len = p.steps * tps
     if (this.songTick === 0) {
       const b = this.songBar; Tone.getDraw().schedule(() => this.onSongBar?.(b), time)
@@ -167,6 +172,7 @@ export class RhythmEngine {
     if (vr?.voice) voice = vr.voice
     vel = Math.min(1, vel * (vr?.gain ?? 1))
     const inst = this.inst(channelId, voice); if (!inst) return
+    if (hitBus.size) { const v0 = voice, vv = vel; Tone.getDraw().schedule(() => hitBus.forEach(f => f(v0, vv, variant)), t) }
     if (voice === 'tick' || voice === 'pedal') this.channels.get(channelId)?.insts.open?.choke?.(t)
     const g = Math.max(0.02, Math.min(0.028, stepSec / 2)) // flam/drag grace spacing: ~28 ms, never past half a step
     for (let i = graces; i > 0; i--) inst.trigger(Math.max(0, t - g * i), vel * 0.35)

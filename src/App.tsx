@@ -26,7 +26,7 @@ export default function App() {
         <main key={route} className="pt-8 rise">
           {page === 'about' ? <About /> : page === 'pitch' ? <Pitch /> : page === 'theory' ? <Theory /> : page === 'story' ? <Story /> : page === 'history' ? <History /> : page === 'lens' ? <Lens id={sub} go={go} /> : <Library />}
         </main>
-        <footer className="mt-24 pt-8 border-t border-line flex justify-between text-xs text-mute"><span>Pulse</span><a href="#/about">About & credits</a></footer>
+        <footer className="mt-24 mb-24 pt-8 border-t border-line flex justify-between text-xs text-mute"><span>Pulse</span><a href="#/about">About & credits</a></footer>
       </div>
     </PlayerProvider>
   )

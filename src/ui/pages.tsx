@@ -5,7 +5,11 @@ import { HISTORY, SOURCES } from '../data/history'
 import { CULTURES, WORDING_NOTES, INTERLOCK_PRESETS, SOURCES_VERIFIED, type Strength } from '../data/cultures'
 import { ARTISTS } from '../data/artists'
 import { THEORY } from '../data/theory'
-import { SONGS, type Song } from '../data/songs'
+import { SONGS as ALL_SONGS, type Song } from '../data/songs'
+// Original multi-section drum journeys live on the Story page, not in Songs.
+const isJourney = (s: Song) => s.raw.id.startsWith('j-')
+const SONGS = ALL_SONGS.filter(s => !isJourney(s))
+const JOURNEYS = ALL_SONGS.filter(isJourney)
 import LENS from '../data/lens-deep.json'
 import { videosFor, type Video } from '../data/videos'
 import type { Pattern, Voice } from '../engine/types'
@@ -59,7 +63,7 @@ function RequestSong() {
     if (hp) { setState('sent'); return } // honeypot filled: a bot, drop silently
     setState('sending')
     try {
-      const r = await fetch('https://formsubmit.co/ajax/pulse-requests@mail.grokbot.com', {
+      const r = await fetch('https://formsubmit.co/ajax/ace7abe81ae4d20d81a3316d83cc196d', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ _subject: `Pulse song request: ${t}`, _captcha: 'false', request: t }),
       })
@@ -106,12 +110,18 @@ function Songs() {
 }
 
 export function Story() {
-  const { loadArrangement, toggle, playing, section, arrangement } = usePlayer()
+  const { loadArrangement, loadSong, toggle, playing, section, arrangement } = usePlayer()
   return <>
     <H1 t="Storytelling" sub="How a drum part introduces, develops and resolves, and how kit elements interact along the way." />
     <button className="h-11 px-5 rounded-full bg-amber text-ink text-sm font-medium mb-10" onClick={async () => { loadArrangement(STORY_ARRANGEMENT); await toggle() }}>{playing && arrangement ? 'Restart example' : 'Play the 18-bar example'}</button>
     <ol className="mb-14 space-y-3">{STORY_ARRANGEMENT.sections.map((s, i) => <li key={i} className={`text-sm ${arrangement && section === i ? 'text-amber' : 'text-bone/60'}`}><span className="font-medium">{s.name}</span> · {s.bars} bars. {s.note}</li>)}</ol>
     {STORY_TEXT.map(t => <section key={t.h} className="mb-10"><h2 className="text-lg font-medium">{t.h}</h2><p className="mt-2 text-bone/70 leading-relaxed">{t.p}</p></section>)}
+    {JOURNEYS.length > 0 && <section className="mb-10"><h2 className="text-lg font-medium">Drum journeys</h2>
+      <p className="mt-2 text-bone/70 leading-relaxed">Original multi-section pieces that put these ideas to work over a few minutes each.</p>
+      <ul className="mt-4 divide-y divide-line">{JOURNEYS.map(j => <li key={j.raw.id} className="py-3 flex items-center gap-3">
+        <div className="flex-1 min-w-0"><p className="font-medium truncate">{j.raw.song}</p><p className="text-xs text-mute">{j.sections.length} sections · {j.sections.reduce((n, x) => n + x.bars, 0)} bars</p></div>
+        <button aria-label={`Play ${j.raw.song}`} onClick={async () => { await loadSong(j); await toggle() }} className="w-10 h-10 rounded-full bg-white/[0.08] grid place-items-center">▶</button>
+      </li>)}</ul></section>}
   </>
 }
 
