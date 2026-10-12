@@ -201,7 +201,6 @@ function Segmented<T extends string | number>({ value, options, onChange }: { va
 export function PlayerBar() {
   const P = usePlayer()
   const [open, setOpen] = useState(false)
-  const first = P.layers[0]?.pattern
   const sg = P.song; const si = sg ? sectionOf(sg, P.songBar) : 0
   const title = sg ? sg.raw.song : P.arrangement ? P.arrangement.name : P.layers.length ? P.layers.map(l => l.pattern.name).join(' + ') : 'Choose a rhythm'
   const sub = sg ? `${sg.sections[si].name} · bar ${P.songBar - sg.sections[si].start + 1}/${sg.sections[si].bars}${P.loopSection !== null ? ' · looping' : ''}` : P.arrangement && P.section !== null ? P.arrangement.sections[P.section].name : P.inFill ? 'Fill' : `${KITS.find(k => k.id === P.kitId)!.name}`
