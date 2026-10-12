@@ -52,29 +52,29 @@ function SongButtons({ song }: { song: Song }) {
 }
 
 function RequestSong() {
-  const [song, setSong] = useState(''); const [artist, setArtist] = useState(''); const [note, setNote] = useState(''); const [hp, setHp] = useState('')
+  const [text, setText] = useState(''); const [hp, setHp] = useState('')
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); if (!song.trim() || !artist.trim()) return
+    e.preventDefault(); const t = text.trim(); if (!t) return
     if (hp) { setState('sent'); return } // honeypot filled: a bot, drop silently
     setState('sending')
     try {
       const r = await fetch('https://formsubmit.co/ajax/pulse-requests@mail.grokbot.com', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ _subject: `Pulse song request: ${song.trim()} – ${artist.trim()}`, _captcha: 'false', _template: 'table', song: song.trim(), artist: artist.trim(), note: note.trim() }),
+        body: JSON.stringify({ _subject: `Pulse song request: ${t}`, _captcha: 'false', request: t }),
       })
       if (!r.ok) throw new Error(String(r.status))
-      setState('sent'); setSong(''); setArtist(''); setNote('')
+      setState('sent'); setText('')
     } catch { setState('error') }
   }
-  const f = 'h-10 px-3 rounded-xl bg-white/[0.05] border border-white/[0.06] text-sm placeholder:text-mute outline-none focus:border-amber/60'
-  return <form onSubmit={submit} className="mb-10 space-y-2">
-    <p className="text-xs uppercase tracking-wider text-mute">Request a song</p>
-    <div className="grid grid-cols-2 gap-2"><input className={f} placeholder="Song" value={song} onChange={e => { setSong(e.target.value); setState('idle') }} required /><input className={f} placeholder="Artist" value={artist} onChange={e => { setArtist(e.target.value); setState('idle') }} required /></div>
+  return <form onSubmit={submit} className="mb-10">
     <input type="text" name="_honey" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e => setHp(e.target.value)} className="hidden" />
-    <div className="flex gap-2"><input className={`${f} flex-1 min-w-0`} placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} /><button disabled={!song.trim() || !artist.trim() || state === 'sending'} className="h-10 px-4 rounded-xl bg-amber text-ink text-sm font-medium disabled:opacity-30">{state === 'sending' ? '…' : 'Send'}</button></div>
-    {state === 'sent' && <p className="text-[11px] text-amber">Thanks, request sent.</p>}
-    {state === 'error' && <p className="text-[11px] text-mute">Couldn't send. Try again in a moment.</p>}
+    <div className="flex gap-2">
+      <input className="flex-1 min-w-0 h-10 px-3 rounded-xl bg-white/[0.05] border border-white/[0.06] text-sm placeholder:text-mute outline-none focus:border-amber/60" placeholder="Request a song, e.g. Schism by Tool" aria-label="Request a song" value={text} onChange={e => { setText(e.target.value); setState('idle') }} />
+      <button disabled={!text.trim() || state === 'sending'} className="h-10 px-4 rounded-xl bg-amber text-ink text-sm font-medium disabled:opacity-30">{state === 'sending' ? '…' : 'Send'}</button>
+    </div>
+    {state === 'sent' && <p className="mt-1.5 text-[11px] text-amber">Thanks, request sent.</p>}
+    {state === 'error' && <p className="mt-1.5 text-[11px] text-mute">Couldn't send. Try again in a moment.</p>}
   </form>
 }
 
