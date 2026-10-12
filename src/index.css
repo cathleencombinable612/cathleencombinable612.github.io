@@ -1,0 +1,5 @@
+@tailwind base; @tailwind components; @tailwind utilities;
+html,body{background:#0b0b0c;color:#f2efe8;-webkit-tap-highlight-color:transparent}
+input[type=range]{accent-color:#ffb000}
+.prose-r p{margin:.6rem 0;line-height:1.6;color:#d8d4cc}
+.prose-r h3{font-weight:700;margin-top:1.2rem;color:#f2efe8}

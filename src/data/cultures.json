@@ -1,0 +1,240 @@
+{
+  "schema": "{id,culture,instrument,practice,rhythm,groupEvidence,evidenceStrength:'strong'|'moderate'|'weak'|'romanticized',sources:string[],flags:string[]}",
+  "entries": [
+    {
+      "id": "nordic-sami",
+      "culture": "Nordic / Sámi",
+      "instrument": "goavddis frame/bowl drum",
+      "practice": "noaidi trance journeys, divination",
+      "rhythm": "steady repetitive beat; no recorded tempo",
+      "groupEvidence": "audience present; trance individual",
+      "evidenceStrength": "strong",
+      "sources": [
+        "https://en.wikipedia.org/wiki/S%C3%A1mi_drum",
+        "https://sagadb.org/eiriks_saga_rauda.en"
+      ],
+      "flags": [
+        "Viking/seiðr drumming is neo-pagan; no drum in Eiríks saga"
+      ]
+    },
+    {
+      "id": "finnic-karelian",
+      "culture": "Finnic / Karelian",
+      "instrument": "voice, kantele",
+      "practice": "tietäjä incantation trance; paired runo-singing",
+      "rhythm": "Kalevala trochaic tetrameter",
+      "groupEvidence": "paired singers",
+      "evidenceStrength": "moderate",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Tiet%C3%A4j%C3%A4",
+        "https://en.wikipedia.org/wiki/Kalevala_meter"
+      ],
+      "flags": [
+        "drumming evidence weak"
+      ]
+    },
+    {
+      "id": "siberian-uralic",
+      "culture": "Siberian & Uralic (Khanty, Mansi, Nenets)",
+      "instrument": "large oval frame drum with pendants",
+      "practice": "shamanic séance, healing, soul journey",
+      "rhythm": "accelerating, phased (call/journey/return)",
+      "groupEvidence": "community attends and responds",
+      "evidenceStrength": "strong",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Siberian_shamanism"
+      ],
+      "flags": [
+        "Soviet/missionary source bias"
+      ]
+    },
+    {
+      "id": "mongolian-tuvan-turkic",
+      "culture": "Mongolian / Tuvan / Turkic",
+      "instrument": "dünggür frame drum; Kazakh kobyz fiddle",
+      "practice": "kam/böö healing rites; drum as horse",
+      "rhythm": "galloping, horse-gait patterns",
+      "groupEvidence": "families attend",
+      "evidenceStrength": "strong",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Tuvan_shamanism",
+        "https://en.wikipedia.org/wiki/Mongolian_shamanism"
+      ],
+      "flags": [
+        "post-1990 revival differs from older practice"
+      ]
+    },
+    {
+      "id": "hungarian-taltos",
+      "culture": "Hungarian táltos",
+      "instrument": "sieve (rosta) in folklore",
+      "practice": "folk seer trance/spirit battles",
+      "rhythm": "unknown",
+      "groupEvidence": "none",
+      "evidenceStrength": "weak",
+      "sources": [
+        "https://en.wikipedia.org/wiki/T%C3%A1ltos"
+      ],
+      "flags": [
+        "Diószegi reconstruction debated; neo-pagan táltos drumming romanticized"
+      ]
+    },
+    {
+      "id": "baltic",
+      "culture": "Baltic",
+      "instrument": "kanklės/kokle, voice (sutartinės)",
+      "practice": "interlocking group polyphony",
+      "rhythm": "dense repetitive interlocking",
+      "groupEvidence": "inherently collective; not trance",
+      "evidenceStrength": "weak",
+      "sources": [
+        "https://ich.unesco.org/en/RL/sutartines-lithuanian-multipart-songs-00433",
+        "https://en.wikipedia.org/wiki/Sutartin%C4%97s"
+      ],
+      "flags": [
+        "ancient Baltic drumming is neo-pagan"
+      ]
+    },
+    {
+      "id": "celtic-irish",
+      "culture": "Celtic / Irish",
+      "instrument": "bodhrán (modern role, 1960s)",
+      "practice": "no attested trance drumming; imbas forosnai drumless",
+      "rhythm": "trad reel/jig accompaniment",
+      "groupEvidence": "none",
+      "evidenceStrength": "romanticized",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Bodhr%C3%A1n",
+        "https://en.wikipedia.org/wiki/Imbas_forosnai"
+      ],
+      "flags": [
+        "druid drumming claims unfounded"
+      ]
+    },
+    {
+      "id": "basque",
+      "culture": "Basque",
+      "instrument": "txalaparta, pandero, ttun-ttun",
+      "practice": "cider/celebration signal; 1960s revival",
+      "rhythm": "two-player interlock (tapa/herrena)",
+      "groupEvidence": "collective music, no trance",
+      "evidenceStrength": "weak",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Txalaparta"
+      ],
+      "flags": [
+        "akelarre drumming = witch-trial fantasy"
+      ]
+    },
+    {
+      "id": "italian-tarantism",
+      "culture": "Italian tarantism",
+      "instrument": "tamburello, violin, accordion",
+      "practice": "tarantate healing dance, Galatina June 29",
+      "rhythm": "pizzica 6/8 or 12/8, fast, escalating",
+      "groupEvidence": "community co-produced healing",
+      "evidenceStrength": "strong",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Tarantism",
+        "https://en.wikipedia.org/wiki/Pizzica"
+      ],
+      "flags": [
+        "Notte della Taranta is a revival, not a ritual"
+      ]
+    },
+    {
+      "id": "greek-thracian",
+      "culture": "Greek & Thracian",
+      "instrument": "tympanon, aulos, kymbala",
+      "practice": "Dionysian maenads, Korybantic rites",
+      "rhythm": "unknown; Phrygian 'orgiastic'",
+      "groupEvidence": "collective ecstasy in texts",
+      "evidenceStrength": "moderate",
+      "sources": [
+        "http://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0092",
+        "http://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.01.0166",
+        "https://en.wikipedia.org/wiki/Corybantes"
+      ],
+      "flags": [
+        "literary not ethnographic"
+      ]
+    },
+    {
+      "id": "anatolian-sufi-alevi",
+      "culture": "Anatolian Sufi & Alevi",
+      "instrument": "kudüm, ney, bendir; bağlama",
+      "practice": "Mevlevi sema; Alevi semah in cem",
+      "rhythm": "usul cycles; semah slow→fast",
+      "groupEvidence": "collective synchronized",
+      "evidenceStrength": "strong",
+      "sources": [
+        "https://ich.unesco.org/en/RL/mevlevi-sema-ceremony-00100",
+        "https://ich.unesco.org/en/RL/semah-alevi-bektasi-ritual-00384"
+      ],
+      "flags": [
+        "Mevlevis reject 'trance'"
+      ]
+    },
+    {
+      "id": "balkan-romani",
+      "culture": "Balkan & Romani",
+      "instrument": "tapan/davul, lyra, gaida, violin",
+      "practice": "Anastenaria fire-walking; Călușari",
+      "rhythm": "aksak 7/8, 9/8, 11/8",
+      "groupEvidence": "possession-like group states",
+      "evidenceStrength": "strong",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Anastenaria",
+        "https://ich.unesco.org/en/RL/calus-ritual-00090",
+        "https://en.wikipedia.org/wiki/Aksak"
+      ],
+      "flags": [
+        "avoid exoticized 'Romani trance' claims"
+      ]
+    },
+    {
+      "id": "caucasus",
+      "culture": "Caucasus",
+      "instrument": "voice/clapping; dhol, daf",
+      "practice": "Chechen/Ingush Qadiri zikr circle",
+      "rhythm": "escalating tempo, stamping",
+      "groupEvidence": "strong collective",
+      "evidenceStrength": "strong",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Dhikr"
+      ],
+      "flags": [
+        "other Caucasus trance claims weak"
+      ]
+    },
+    {
+      "id": "gnawa",
+      "culture": "North African Gnawa",
+      "instrument": "guembri, qraqeb, tbel",
+      "practice": "lila/derdeba possession ceremony",
+      "rhythm": "12/8 vs 4 tension; accelerating suites",
+      "groupEvidence": "collective choreographed trance",
+      "evidenceStrength": "strong",
+      "sources": [
+        "https://ich.unesco.org/en/RL/gnawa-01170",
+        "https://en.wikipedia.org/wiki/Gnawa"
+      ],
+      "flags": []
+    },
+    {
+      "id": "iberian-moorish",
+      "culture": "Iberian / Moorish",
+      "instrument": "adufe, pandero cuadrado",
+      "practice": "festival drumming; no trance rite",
+      "rhythm": "folk dance meters",
+      "groupEvidence": "none",
+      "evidenceStrength": "weak",
+      "sources": [
+        "https://en.wikipedia.org/wiki/Adufe"
+      ],
+      "flags": [
+        "duende is aesthetic, not trance"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+import type { Kit } from '../engine/types'
+
+export const KITS: Kit[] = [
+  { id: 'acoustic', name: 'Acoustic kit', blurb: 'Kick, snare, hats, ride and toms.', voices: {
+    low: { kind: 'membrane', pitch: 50, decay: 0.4, pitchDecay: 0.05, gain: 1.1 },
+    back: { kind: 'noise', tone: 3000, decay: 0.18, pitch: 190, gain: 0.8 },
+    tick: { kind: 'noise', tone: 8000, decay: 0.04, gain: 0.35 },
+    open: { kind: 'noise', tone: 7000, decay: 0.3, gain: 0.3 },
+    ride: { kind: 'metal', pitch: 420, tone: 5.1, decay: 0.5, gain: 0.12 },
+    tomHi: { kind: 'membrane', pitch: 160, decay: 0.35, pitchDecay: 0.03 },
+    tomLo: { kind: 'membrane', pitch: 95, decay: 0.45, pitchDecay: 0.03 },
+    accent: { kind: 'noise', tone: 2500, decay: 0.05, pitch: 900, gain: 0.5 },
+    shaker: { kind: 'noise', tone: 9000, decay: 0.05, gain: 0.25 },
+    bell: { kind: 'metal', pitch: 800, tone: 3.2, decay: 0.2, gain: 0.12 } } },
+  { id: 'electronic', name: 'Electronic', blurb: 'Drum-machine style: boomy kick, clap, tight hats.', voices: {
+    low: { kind: 'membrane', pitch: 42, decay: 0.8, pitchDecay: 0.08, gain: 1.2 },
+    back: { kind: 'noise', tone: 1500, decay: 0.22, gain: 0.9 },
+    tick: { kind: 'noise', tone: 10000, decay: 0.025, gain: 0.4 },
+    open: { kind: 'noise', tone: 9000, decay: 0.22, gain: 0.3 },
+    ride: { kind: 'metal', pitch: 600, tone: 8, decay: 0.3, gain: 0.1 },
+    tomHi: { kind: 'membrane', pitch: 180, decay: 0.3, pitchDecay: 0.1 },
+    tomLo: { kind: 'membrane', pitch: 90, decay: 0.4, pitchDecay: 0.1 },
+    accent: { kind: 'metal', pitch: 1500, tone: 1.5, decay: 0.05, gain: 0.15 },
+    shaker: { kind: 'noise', tone: 11000, decay: 0.04, gain: 0.3 },
+    bell: { kind: 'metal', pitch: 560, tone: 1.4, decay: 0.15, gain: 0.15 } } },
+  { id: 'frame', name: 'Frame / shamanic drum', blurb: 'One large frame drum played many ways: center boom, edge, rim, rattle.', voices: {
+    low: { kind: 'membrane', pitch: 62, decay: 0.7, pitchDecay: 0.02, gain: 1.1 },
+    back: { kind: 'membrane', pitch: 110, decay: 0.25, pitchDecay: 0.01 },
+    tick: { kind: 'noise', tone: 5000, decay: 0.03, pitch: 400, gain: 0.3 },
+    open: { kind: 'noise', tone: 4500, decay: 0.25, gain: 0.25 },
+    ride: { kind: 'noise', tone: 6000, decay: 0.08, gain: 0.3 },
+    tomHi: { kind: 'membrane', pitch: 90, decay: 0.4, pitchDecay: 0.02 },
+    tomLo: { kind: 'membrane', pitch: 55, decay: 0.8, pitchDecay: 0.02 },
+    accent: { kind: 'membrane', pitch: 140, decay: 0.12, pitchDecay: 0.005 },
+    shaker: { kind: 'noise', tone: 7000, decay: 0.09, gain: 0.3 },
+    bell: { kind: 'metal', pitch: 1200, tone: 2.1, decay: 0.4, gain: 0.08 } } },
+  { id: 'latin', name: 'Latin hand percussion', blurb: 'Congas, bongos, clave, cowbell, shaker.', voices: {
+    low: { kind: 'membrane', pitch: 85, decay: 0.35, pitchDecay: 0.015, gain: 1 },
+    back: { kind: 'membrane', pitch: 210, decay: 0.12, pitchDecay: 0.004 },
+    tick: { kind: 'noise', tone: 8000, decay: 0.06, gain: 0.3 },
+    open: { kind: 'noise', tone: 6000, decay: 0.15, gain: 0.3 },
+    ride: { kind: 'metal', pitch: 700, tone: 1.6, decay: 0.12, gain: 0.14 },
+    tomHi: { kind: 'membrane', pitch: 290, decay: 0.15, pitchDecay: 0.005 },
+    tomLo: { kind: 'membrane', pitch: 150, decay: 0.25, pitchDecay: 0.01 },
+    accent: { kind: 'metal', pitch: 2500, tone: 1.1, decay: 0.06, gain: 0.2 },
+    shaker: { kind: 'noise', tone: 9000, decay: 0.07, gain: 0.3 },
+    bell: { kind: 'metal', pitch: 560, tone: 1.4, decay: 0.18, gain: 0.16 } } },
+]
