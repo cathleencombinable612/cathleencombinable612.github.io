@@ -56,7 +56,7 @@ export const THEORY: Concept[] = [
       P('mm', 'Backbeat → dotted-8th implied tempo', 32, 4, 100, { low: 'X.......X.......X.....X.....X...', back: '....X.......X......X.....X.....X', tick: 'x.x.x.x.x.x.x.x.x..x..x..x..x..x' }, { ticksPerStep: 3 }),
     ] },
   { id: 'swing', title: 'Swing ratios, microtiming and groove',
-    body: 'Swing lengthens the on-beat note of each pair and shortens the off-beat. 1:1 is straight, 2:1 is triplet swing, and 3:1 is dotted. Measured jazz swing ratios change with tempo: wide at slow tempos and close to straight at fast ones (Friberg & Sundström 2002). "Microtiming" means small, deliberate deviations (a laid-back snare, a pushed hi-hat). Whether microtiming increases groove is debated: several studies (e.g. Davies et al. 2013; Senn et al. 2016) find that listeners often rate quantised versions as equally or more groovy.',
+    body: 'Swing lengthens the on-beat note of each pair and shortens the off-beat. 1:1 is straight, 2:1 is triplet swing, and 3:1 is dotted. Measured jazz swing ratios change with tempo: wide at slow tempos and close to straight at fast ones (Friberg & Sundström 2002). "Microtiming" means small, deliberate deviations (a laid-back snare, a pushed hi-hat). Whether microtiming increases groove is debated: Davies, Madison, Silva & Gouyon (2013, Music Perception) found that added microtiming deviations generally lowered groove ratings. Senn et al. (2016, Frontiers in Psychology) found that quantised and original expert timing were rated about equally groovy, and that exaggerated deviations lowered ratings.',
     listen: 'Play this and move the Swing slider in Mix: 0% straight, ~33% ≈ 2:1 triplet swing, 66%+ toward dotted.',
     patterns: [
       P('sw', 'Swing test: 16th hats and backbeat', 16, 4, 92, { tick: 'xxxxxxxxxxxxxxxx', low: 'X.....x...X.....', back: '....X.......X...' }, { swingable: true, suggestedSwing: 0.33 }),
@@ -78,7 +78,7 @@ export const THEORY: Concept[] = [
       P('e516', 'E(5,16) bossa-like', 16, 4, 110, { accent: E(5, 16), tick: 'x.x.x.x.x.x.x.x.' }),
     ] },
   { id: 'bell', title: 'Cross-rhythm in African bell patterns',
-    body: 'In many West and Central African and Afro-Cuban traditions, the bell timeline is heard against a four-beat dance pulse (dotted quarters in 12/8) and a three-beat or six-beat counter-pulse at once. Kofi Agawu ("Structural analysis or cultural analysis?", 2006; The African Imagination in Music, 2016) emphasises that the dancers\' feet supply the beat that outsiders often miss. David Locke\'s work on Ewe music shows how parts are heard relative to the bell, not relative to bar lines.',
+    body: 'In many West and Central African and Afro-Cuban traditions, the bell timeline is heard against a four-beat dance pulse (dotted quarters in 12/8) and a three-beat or six-beat counter-pulse at once. Kofi Agawu ("Structural Analysis or Cultural Analysis? Competing Perspectives on the \'Standard Pattern\' of West African Rhythm," JAMS 59/1, 2006; The African Imagination in Music, Oxford, 2016) emphasises that the dancers\' feet supply the beat that outsiders often miss. David Locke\'s work on Ewe music (Drum Gahu, 1987; his critical edition of Agbadza) documents the 2+2+1+2+2+2+1 bell phrase and shows how parts are heard relative to the bell, not relative to bar lines.',
     listen: 'Load the bell, then add the 4-pulse, then the 3-pulse. Try hearing the bell against each in turn.',
     patterns: [
       P('b-bell', 'Standard bell (12/8)', 12, 3, 100, { bell: 'X.x.xx.x.x.x' }),

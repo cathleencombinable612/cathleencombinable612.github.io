@@ -39,7 +39,7 @@ export const ARTISTS: ArtistLens[] = [
   { id: 'allen', name: 'Tony Allen', band: 'Fela Kuti & Africa 70; solo', era: '1960s–2020',
     technique: ['Co-creator of Afrobeat with Fela Kuti, who said Afrobeat would not exist without him.', 'Four-way independence. Influenced by jazz drummers such as Max Roach and Art Blakey, he spread interlocking parts across hats, snare, kick and toms.', 'A light touch, open hi-hat accents on off-beats, and very few cymbal crashes.'],
     feeling: 'Floating, circular and danceable. The groove is dense but never crowded, because every limb leaves room for the others.',
-    storytelling: 'Long songs that develop slowly. He kept the core pattern fixed and let small variations (an open hat here, a tom there) mark time over 10+ minutes. Brian Eno has been widely quoted calling him perhaps the greatest drummer who ever lived.',
+    storytelling: 'Long songs that develop slowly. He kept the core pattern fixed and let small variations (an open hat here, a tom there) mark time over 10+ minutes. Brian Eno called him "perhaps the greatest drummer who has ever lived" (as reported by Reuters, 2008, and repeated in BBC obituaries, 2020).',
     tryThis: [
       { pattern: P('allen-afrobeat', 'Afrobeat interlock (approximation)', 16, 4, 108, { tick: 'x.xxx.xxx.xxx.xx', open: '..x...x...x...x.', low: 'X.....X.x.......', back: '....x..g.g..X.g.', tomLo: '............x..x' }, true), note: 'Mute each voice in turn: each limb is a separate line.' },
       { pattern: P('allen-shaker', 'Shekere-style layer', 16, 4, 108, { shaker: 'x.Xx.xX.x.Xx.xX.' }), note: 'Layer on top with the Latin kit to hear the percussion section.' } ] },
@@ -48,7 +48,7 @@ export const ARTISTS: ArtistLens[] = [
       'Melodic tom work: a large kit with many toms, tuned so fills and ostinatos work as melodic lines. He also plays pitched electronic pads alongside the acoustic drums.',
       'Odd meters and polymeter: Tool songs often move through 5/4, 7/8 and mixed groupings, and Carey layers figures of one length over another. "Schism" is a frequently cited example of shifting meters.',
       '"Lateralus" and the Fibonacci sequence: the band has discussed building the song on Fibonacci numbers. The vocal syllable counts follow the sequence, and the chorus is often described as moving through 9/8, 8/8 and 7/8 (987 is a Fibonacci number). Treat bar-by-bar analyses online as fan transcriptions, not band-confirmed scores.',
-      'Tabla influence: he has studied Indian rhythm (he has cited tabla teacher Aloke Dutta), which shows in his phrasing and in tabla sounds and cyclic, tala-like groupings in his parts.',
+      'Tabla influence: he has studied Indian rhythm with tabla master Aloke Dutta, whom his official site names as his tabla teacher. Dutta also plays on the live "Pushit" on Salival, which shows in his phrasing and in tabla sounds and cyclic, tala-like groupings in his parts.',
       'Electronics: from early Simmons pads to the Mandala pads he has long used, triggering samples including pitched and tabla-like sounds, so a single strike can play a specific note.' ],
     feeling: 'Ritual, hypnotic weight. Long, patient ostinatos that build trance-like intensity, with sudden, precise eruptions.',
     storytelling: 'Parts evolve across long songs. A tom ostinato appears, gets re-grouped against the meter, thickens, and finally resolves when the cycles realign. Melodic tom lines often shadow the bass or guitar riff, so the drums carry harmony as well as time.',

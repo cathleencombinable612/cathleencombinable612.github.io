@@ -16,7 +16,7 @@ const Tag = ({ c }: { c: string }) => <span className="text-[11px] uppercase tra
 export function Library() {
   const fams = [...new Set(RHYTHMS.map(r => r.family))]
   return <>
-    <H1 t="Rhythm library" sub="Fifteen grooves. Each has notes on how it tends to feel and why. Play one, then add layers to hear how they combine." />
+    <H1 t="Rhythm library" sub="Sixteen grooves. Each has notes on how it tends to feel and why. Play one, then add layers to hear how they combine." />
     {fams.map(f => <section key={f} className="mb-14"><Tag c={f} />
       {RHYTHMS.filter(r => r.family === f).map(r => <article key={r.pattern.id} className="mt-6 pb-8 border-b border-line last:border-0">
         <h2 className="text-lg font-medium">{r.pattern.name}</h2>
