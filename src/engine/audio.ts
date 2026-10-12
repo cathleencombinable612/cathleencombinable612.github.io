@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 import type { Kit, KitVoice, Layer, Voice, Arrangement, Pattern } from './types'
-import { TICKS_PER_BAR, hitsAt, stepForTick, swingOffset, audibleLayers } from './pattern'
+import { TICKS_PER_BAR, hitsAt, stepForTick, swingOffset, audibleLayers, ticksPerStep } from './pattern'
 
 type Inst = { trigger: (t: number, v: number) => void; dispose: () => void }
 
@@ -90,20 +90,20 @@ export class RhythmEngine {
     this.tick = 0; this.bar = 0
     const tickLen = `${(Tone.getTransport().PPQ * 4) / TICKS_PER_BAR}i`
     this.eventId = tr.scheduleRepeat(time => {
-      if (this.tick === 0) this.applySection(this.bar)
+      if (this.tick % TICKS_PER_BAR === 0) this.applySection(this.bar)
       const steps: Record<string, number> = {}
       const tickSec = Tone.Time(tickLen).toSeconds()
       for (const l of audibleLayers(this.layers)) {
         const step = stepForTick(l.pattern, this.tick); if (step === null) continue
         steps[l.id] = step
-        const stepSec = tickSec * (TICKS_PER_BAR / l.pattern.steps)
+        const stepSec = tickSec * ticksPerStep(l.pattern)
         const t = time + swingOffset(l.pattern, step, this.swing) * stepSec
         for (const h of hitsAt(l.pattern, step)) this.inst(l.id, h.voice)?.trigger(t, h.velocity)
       }
       for (const l of this.layers) if (steps[l.id] === undefined) { const s = stepForTick(l.pattern, this.tick); if (s !== null) steps[l.id] = s }
       if (Object.keys(steps).length) { const bar = this.bar; Tone.getDraw().schedule(() => this.listeners.forEach(f => f(steps, bar)), time) }
-      this.tick = (this.tick + 1) % TICKS_PER_BAR
-      if (this.tick === 0) this.bar++
+      this.tick++
+      if (this.tick % TICKS_PER_BAR === 0) this.bar++
     }, tickLen, 0)
     tr.start('+0.05')
   }

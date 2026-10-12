@@ -41,6 +41,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const l: Layer = { id: `l${n++}`, pattern: p, volume: 0.85, mute: false, solo: false }
       setLayers(prev => (add ? [...prev, l] : [l]))
       if (!add && p.suggestedBpm) { setBpmS(p.suggestedBpm); e().setBpm(p.suggestedBpm) }
+      if (!add && p.suggestedSwing !== undefined) { setSwingS(p.suggestedSwing); e().setSwing(p.suggestedSwing) }
     },
     loadArrangement: a => {
       setArr(a); setBpmS(a.bpm); e().setBpm(a.bpm); setLayers([])

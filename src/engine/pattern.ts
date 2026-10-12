@@ -5,7 +5,7 @@ const VEL: Record<string, number> = { X: 1, x: 0.75, g: 0.3 }
 
 export function validatePattern(p: Pattern): string[] {
   const errs: string[] = []
-  if (TICKS_PER_BAR % p.steps !== 0) errs.push(`${p.id}: steps ${p.steps} must divide ${TICKS_PER_BAR}`)
+  if (!p.ticksPerStep && TICKS_PER_BAR % p.steps !== 0) errs.push(`${p.id}: steps ${p.steps} must divide ${TICKS_PER_BAR}`)
   for (const [v, s] of Object.entries(p.tracks)) if (s && s.length !== p.steps) errs.push(`${p.id}.${v}: length ${s.length} != ${p.steps}`)
   return errs
 }
@@ -18,15 +18,18 @@ export function hitsAt(p: Pattern, step: number): Hit[] {
   return out
 }
 
-/** Given a global tick (0..47) return the pattern step if a step starts here. */
+export const ticksPerStep = (p: Pattern) => p.ticksPerStep ?? TICKS_PER_BAR / p.steps
+
+/** Given an absolute tick since start, return the pattern step if a step starts here. Each pattern cycles independently (polymeter-safe). */
 export function stepForTick(p: Pattern, tick: number): number | null {
-  const per = TICKS_PER_BAR / p.steps
-  return tick % per === 0 ? tick / per : null
+  const per = ticksPerStep(p)
+  return tick % per === 0 ? (tick / per) % p.steps : null
 }
 
 /** Swing delay as a fraction of a step. Odd steps of 8- or 16-step grids get delayed. swing 0..1 maps to straight..triplet. */
 export function swingOffset(p: Pattern, step: number, swing: number): number {
-  if (!p.swingable || (p.steps !== 8 && p.steps !== 16) || step % 2 === 0) return 0
+  const tps = ticksPerStep(p)
+  if (!p.swingable || (tps !== 3 && tps !== 6) || step % 2 === 0) return 0
   return swing * (1 / 3)
 }
 
@@ -37,3 +40,11 @@ export function audibleLayers(layers: Layer[]): Layer[] {
 
 /** Beats per second of the quarter-note (or dotted-quarter in 12/8) pulse. */
 export const pulseHz = (bpm: number) => bpm / 60
+
+/** Bjorklund/Euclidean rhythm (Toussaint 2005): k onsets spread as evenly as possible over n steps, as an 'x'/'.' string. */
+export function euclid(k: number, n: number, rotate = 0): string {
+  const out: string[] = []
+  for (let i = 0; i < n; i++) out.push(Math.floor((i * k) / n) !== Math.floor(((i - 1) * k) / n) || i === 0 ? 'x' : '.')
+  const r = ((rotate % n) + n) % n
+  return out.slice(r).concat(out.slice(0, r)).join('')
+}

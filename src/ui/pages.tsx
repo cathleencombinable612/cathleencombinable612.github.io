@@ -4,6 +4,8 @@ import { STORY_ARRANGEMENT, STORY_TEXT } from '../data/story'
 import { HISTORY, SOURCES } from '../data/history'
 import { CULTURES, WORDING_NOTES, INTERLOCK_PRESETS, SOURCES_VERIFIED, type Strength } from '../data/cultures'
 import { ARTISTS } from '../data/artists'
+import { THEORY } from '../data/theory'
+import type { Pattern } from '../engine/types'
 import { LoadButtons, usePlayer } from './player'
 
 const H1 = ({ t, sub }: { t: string; sub: string }) => <header className="mb-12"><h1 className="text-3xl font-semibold tracking-tight">{t}</h1><p className="mt-3 text-bone/60 leading-relaxed">{sub}</p></header>
@@ -83,5 +85,21 @@ export function Lens({ id, go }: { id?: string; go: (h: string) => void }) {
     <section className="mb-12"><Tag c="Storytelling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.storytelling}</p></section>
     <section><Tag c="Try this" />{a.tryThis.map(t => <div key={t.pattern.id} className="mt-5"><h3 className="font-medium">{t.pattern.name}</h3><p className="mt-1 text-sm text-bone/60">{t.note}</p><LoadButtons pattern={t.pattern} /></div>)}
       <p className="mt-8 text-xs text-bone/40">These patterns are simplified illustrations of each drummer's approach, not transcriptions.</p></section>
+  </>
+}
+
+export function Theory() {
+  const { load, toggle, playing } = usePlayer()
+  const loadAll = async (ps: Pattern[]) => { ps.forEach((p, i) => load(p, i > 0)); if (!playing) await toggle() }
+  return <>
+    <H1 t="Theory" sub="The ideas underneath rhythm, from meter to tension and release. Every concept has a pattern you can play." />
+    <nav className="mb-14 flex flex-wrap gap-x-4 gap-y-2 text-sm text-bone/50">{THEORY.map(c => <a key={c.id} href={`#/theory`} onClick={e => { e.preventDefault(); document.getElementById(c.id)?.scrollIntoView({ behavior: 'smooth' }) }}>{c.title.split(':')[0]}</a>)}</nav>
+    {THEORY.map(c => <section key={c.id} id={c.id} className="mb-16 scroll-mt-6">
+      <h2 className="text-xl font-medium">{c.title}</h2>
+      <p className="mt-3 text-bone/75 leading-relaxed">{c.body}</p>
+      <p className="mt-4 text-sm text-bone/50">{c.listen}</p>
+      {c.patterns.map(p => <div key={p.id} className="mt-5"><h3 className="text-sm font-medium">{p.name}</h3><LoadButtons pattern={p} /></div>)}
+      {c.patterns.length > 1 && <button className="mt-4 text-sm text-amber" onClick={() => loadAll(c.patterns)}>Play all {c.patterns.length} together →</button>}
+    </section>)}
   </>
 }

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { PlayerProvider, PlayerBar } from './ui/player'
-import { Library, Story, History, Lens } from './ui/pages'
+import { Library, Story, History, Lens, Theory } from './ui/pages'
 
-const NAV = [['library', 'Library'], ['story', 'Story'], ['history', 'History'], ['lens', 'Lens']] as const
+const NAV = [['library', 'Library'], ['theory', 'Theory'], ['story', 'Story'], ['history', 'History'], ['lens', 'Lens']] as const
 
 export default function App() {
   const read = () => location.hash.replace(/^#\/?/, '') || 'library'
@@ -15,10 +15,10 @@ export default function App() {
       <div className="max-w-xl mx-auto px-6 pb-40">
         <nav className="flex items-center justify-between h-20">
           <a href="#/library" className="font-semibold tracking-tight">Pulse</a>
-          <div className="flex gap-5 text-sm">{NAV.map(([k, l]) => <a key={k} href={`#/${k}`} className={page === k ? 'text-amber' : 'text-bone/60'}>{l}</a>)}</div>
+          <div className="flex gap-4 text-sm">{NAV.map(([k, l]) => <a key={k} href={`#/${k}`} className={page === k ? 'text-amber' : 'text-bone/60'}>{l}</a>)}</div>
         </nav>
         <main className="pt-6">
-          {page === 'story' ? <Story /> : page === 'history' ? <History /> : page === 'lens' ? <Lens id={sub} go={go} /> : <Library />}
+          {page === 'theory' ? <Theory /> : page === 'story' ? <Story /> : page === 'history' ? <History /> : page === 'lens' ? <Lens id={sub} go={go} /> : <Library />}
         </main>
       </div>
       <PlayerBar />

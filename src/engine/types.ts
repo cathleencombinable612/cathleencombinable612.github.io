@@ -15,6 +15,10 @@ export interface Pattern {
   suggestedBpm?: number
   /** Whether swing applies (only for even subdivisions). */
   swingable?: boolean
+  /** Grid ticks per step (12 ticks = one quarter note). Defaults to 48/steps (one 4/4 bar per cycle).
+   *  Set explicitly for odd meters (7/8 in 16ths: steps 14, ticksPerStep 3) and polymeter. */
+  ticksPerStep?: number
+  suggestedSwing?: number
 }
 
 export interface Hit { voice: Voice; velocity: number }
