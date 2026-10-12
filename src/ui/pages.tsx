@@ -61,7 +61,7 @@ function Songs() {
       {s.raw.whyItWorks && <p className="mt-2 text-[15px] text-bone/55 leading-relaxed">{s.raw.whyItWorks}</p>}
       <StepGrid pattern={s.pattern} current={-1} />
       <SongButtons song={s} />
-      <details className="mt-3"><summary className="text-xs text-mute cursor-pointer">Form · {s.sections.length} sections · {s.bars.length} bars</summary><SongForm song={s} />{s.raw.formNote && <Note line="Form is approximate." more={s.raw.formNote} />}</details>
+      <details className="mt-3"><summary className="text-xs text-mute cursor-pointer">Form · {s.sections.length} sections · {s.sections.reduce((n, x) => n + x.bars, 0)} bars</summary><SongForm song={s} />{s.raw.formNote && <Note line="Form is approximate." more={s.raw.formNote} />}</details>
       {s.fills.length > 0 && <p className="mt-2 text-xs text-mute">Includes {s.fills.length === 1 ? 'a fill' : `${s.fills.length} fills`}, available under Fill in the player.</p>}
       {s.raw.source && <a href={s.raw.source} target="_blank" rel="noreferrer" className="mt-2 block text-xs text-mute underline underline-offset-2">Reference</a>}
     </article>)}
