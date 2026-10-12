@@ -6,6 +6,7 @@ import { CULTURES, WORDING_NOTES, INTERLOCK_PRESETS, SOURCES_VERIFIED, type Stre
 import { ARTISTS } from '../data/artists'
 import { THEORY } from '../data/theory'
 import { SONGS, type Song } from '../data/songs'
+import LENS from '../data/lens-deep.json'
 import { videosFor, type Video } from '../data/videos'
 import type { Pattern, Voice } from '../engine/types'
 import { PITCHED, noteName, midiToHz } from '../engine/pitch'
@@ -129,16 +130,17 @@ function VideoEmbed({ v }: { v: Video }) {
 export function Lens({ id, go }: { id?: string; go: (h: string) => void }) {
   const a = ARTISTS.find(x => x.id === id)
   if (!a) return <>
-    <H1 t="Percussionist lens" sub="How six drummers create feeling and tell a story with the kit." />
+    <H1 t="Drummer's Lens" sub="How these drummers create feeling and tell a story with the kit." />
     <ul className="divide-y divide-line">{ARTISTS.map(x => <li key={x.id}><button onClick={() => go(`lens/${x.id}`)} className="w-full py-5 text-left flex justify-between"><span className="text-lg">{x.name}</span><span className="text-sm text-bone/40">{x.band}</span></button></li>)}</ul>
   </>
   return <>
-    <button onClick={() => go('lens')} className="text-sm text-bone/50 mb-8">← All drummers</button>
+    <button onClick={() => go('lens')} className="text-sm text-bone/50 mb-8">← Drummer's Lens</button>
     <H1 t={a.name} sub={`${a.band} · ${a.era}`} />
     {videosFor(a.name).length > 0 && <section className="mb-12"><Tag c="Watch" />{videosFor(a.name).map(v => <VideoEmbed key={v.videoId} v={v} />)}</section>}
-    <section className="mb-10"><Tag c="Technique" /><ul className="mt-3 space-y-3 text-bone/75 leading-relaxed">{a.technique.map(t => <li key={t}>{t}</li>)}</ul></section>
-    <section className="mb-10"><Tag c="Feeling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.feeling}</p></section>
-    <section className="mb-12"><Tag c="Storytelling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.storytelling}</p></section>
+    {a.technique.length > 0 && <section className="mb-10"><Tag c="Technique" /><ul className="mt-3 space-y-3 text-bone/75 leading-relaxed">{a.technique.map(t => <li key={t}>{t}</li>)}</ul></section>}
+    {a.feeling && <section className="mb-10"><Tag c="Feeling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.feeling}</p></section>}
+    <DeepLens name={a.name} />
+    {a.storytelling && <section className="mb-12"><Tag c="Storytelling" /><p className="mt-3 text-bone/75 leading-relaxed">{a.storytelling}</p></section>}
     <section><Tag c="Try this" />{a.tryThis.map(t => <div key={t.pattern.id} className="mt-5"><h3 className="font-medium">{t.pattern.name}</h3><p className="mt-1 text-sm text-bone/60">{t.note}</p><LoadButtons pattern={t.pattern} /></div>)}
       <Note className="mt-8" line="Simplified illustrations, not transcriptions." /></section>
   </>
@@ -206,4 +208,21 @@ export function About() {
 function Note({ line, more, className = '' }: { line: string; more?: string; className?: string }) {
   const [open, setOpen] = useState(false)
   return <p className={`mt-2 text-[11px] text-mute leading-snug ${className}`}>{line}{more && <> <button className="underline underline-offset-2" onClick={() => setOpen(o => !o)}>{open ? 'less' : 'more'}</button>{open && <span className="block mt-1">{more}</span>}</>}</p>
+}
+
+type Claim = { claim: string; source_url: string }
+type Quote = { quote: string; topic?: string; source_title?: string; publication?: string; date?: string; url: string }
+const DEEP_SECTIONS: [string, string][] = [['signature_techniques', 'Signature techniques'], ['feel', 'Feel'], ['arranging', 'Arranging & storytelling'], ['influences', 'Influences'], ['gear', 'Gear'], ['impact', 'Impact']]
+const host = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, '') } catch { return 'source' } }
+function DeepLens({ name }: { name: string }) {
+  const d = (LENS as unknown as { drummers: (Record<string, Claim[] | Quote[] | string>)[] }).drummers.find(x => x.name === name)
+  if (!d) return null
+  const quotes = (d.quotes as Quote[] | undefined) ?? []
+  return <>
+    {DEEP_SECTIONS.map(([k, label]) => { const cs = (d[k] as Claim[] | undefined) ?? []; return cs.length > 0 && <section key={k} className="mb-10"><Tag c={label} />
+      <ul className="mt-3 space-y-3 text-bone/75 leading-relaxed">{cs.map(c => <li key={c.claim}>{c.claim} <a href={c.source_url} target="_blank" rel="noreferrer" className="text-[11px] text-mute underline underline-offset-2">{host(c.source_url)}</a></li>)}</ul></section> })}
+    {quotes.length > 0 && <section className="mb-10"><Tag c="In their words" />
+      {quotes.map(q => <figure key={q.quote} className="mt-6 pl-4 border-l border-amber/50"><blockquote className="text-[17px] leading-relaxed text-bone/90">“{q.quote}”</blockquote>
+        <figcaption className="mt-1.5 text-[11px] text-mute"><a href={q.url} target="_blank" rel="noreferrer" className="underline underline-offset-2">{[q.publication, q.date].filter(Boolean).join(', ') || host(q.url)}</a></figcaption></figure>)}</section>}
+  </>
 }

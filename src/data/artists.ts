@@ -54,7 +54,12 @@ export const ARTISTS: ArtistLens[] = [
     feeling: 'Ritual, hypnotic weight. Long, patient ostinatos that build trance-like intensity, with sudden, precise eruptions.',
     storytelling: 'Parts evolve across long songs. A tom ostinato appears, gets re-grouped against the meter, thickens, and finally resolves when the cycles realign. Melodic tom lines often shadow the bass or guitar riff, so the drums carry harmony as well as time.',
     tryThis: [
-      { pattern: P('carey-78', 'Melodic tom ostinato in 7/8 (2+2+3)', 14, 14, 107, { low: 'X...X...X.....', tomLo: '..x...x...x.x.', tomHi: '.x...x...x.x.x', back: '......X.......', tick: 'x.x.x.x.x.x.x.' }, false, 3), note: 'Load the Tuned toms kit and a preset on Kit as Pitch first, so the toms sing a phrase. An illustration of the approach, not a transcription.' },
+      { pattern: P('carey-78', 'Melodic tom ostinato in 7/8 (2+2+3)', 14, 14, 107, { low: 'X...X...X.....', tomLo: '..x...x...x.x.', tomHi: '.x...x...x.x.x', back: '......X.......', tick: 'x.x.x.x.x.x.x.' }, false, 3), note: 'Pick a preset on Kit as Pitch first, so the toms sing a phrase. An illustration of the approach, not a transcription.' },
       { pattern: P('carey-987', '9+8+7 phrase (Lateralus-style)', 24, 24, 130, { low: 'X........X.......X......', tomLo: '...x..x.....x..x....x.x.', tomHi: '.x..x..x.x..x..x.x..x...', accent: 'X........X.......X......' }, false, 6), note: 'Three bars of 9/8, 8/8 and 7/8 in eighths. Accents mark each bar line, so the phrase gets shorter as it goes.' } ] },
+  { id: 'freese', name: 'Josh Freese', band: 'A Perfect Circle; Nine Inch Nails; Devo; session work', era: '1990s–present',
+    technique: [], feeling: '', storytelling: '',
+    tryThis: [
+      { pattern: P('freese-68', 'Judith-style 6/8 verse', 12, 2, 124, { low: 'X.....X.x...', back: '......X.....', tick: 'x.x.x.x.x.x.' }, false, 3), note: 'Rolling 6/8 (dotted quarter ≈ 83). Play the full Judith transcription under Songs to hear how hats, loose hats and ride mark each section.' },
+    ] },
 ]
 registerPatterns(ARTISTS.flatMap(a => a.tryThis.map(t => t.pattern)))

@@ -1,0 +1,793 @@
+{
+  "generated": "2026-10-12",
+  "method": "Each quote was matched verbatim (case/curly-quote/whitespace-normalized) against the fetched source page text. Unverified quotes were dropped.",
+  "drummers": [
+    {
+      "name": "Neil Peart",
+      "signature_techniques": [
+        {
+          "claim": "Long, intricate passages in odd time signatures, and a wide range of percussion beyond the kit: orchestra bells, tubular bells, wind chimes, crotales, timbales, timpani, gong, temple blocks.",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        },
+        {
+          "claim": "Added Simmons electronic drums and Akai samplers starting with Grace Under Pressure (1984).",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        }
+      ],
+      "gear": [
+        {
+          "claim": "Played Slingerland, Tama, Ludwig and Drum Workshop (DW) drums with Rush, in that order.",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        },
+        {
+          "claim": "Zildjian A-series cymbals and Wuhan chinas until the early 2000s, then Sabian's Paragon line, made for him (launched 2004).",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        },
+        {
+          "claim": "A rotating drum riser: acoustic kit in front, electronic kit behind.",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        }
+      ],
+      "feel": [
+        {
+          "claim": "After 20 years spent on time, tempo and 'shadings of rhythmic feel', he said confidence was the key to his playing (MD 1989).",
+          "source_url": "https://www.2112.net/powerwindows/transcripts/19891200moderndrummer.htm"
+        },
+        {
+          "claim": "Began studying with Freddie Gruber in 1994 and reworked his style with jazz and swing elements; later studied with Peter Erskine.",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        },
+        {
+          "claim": "In 2011 he described himself as moving from a 'compositional' drummer toward an improvisational one.",
+          "source_url": "https://www.2112.net/powerwindows/transcripts/20111200moderndrummer.htm"
+        }
+      ],
+      "influences": [
+        {
+          "claim": "Early on: Keith Moon, Ginger Baker, John Bonham. Later: Gene Krupa and Buddy Rich. Also cites Billy Cobham and Bill Bruford.",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        }
+      ],
+      "arranging": [
+        {
+          "claim": "Rush's primary lyricist as well as its drummer.",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        },
+        {
+          "claim": "Said writing and arranging songs, including working out drum patterns, was 'the center of everything' for him. By 1989 he could hear a demo with 'a wide open mind'.",
+          "source_url": "https://www.2112.net/powerwindows/transcripts/19891200moderndrummer.htm"
+        }
+      ],
+      "impact": [
+        {
+          "claim": "Nicknamed 'the Professor'. Rolling Stone's obituary headline called him the 'Rush Drummer Who Set a New Standard for Rock Virtuosity' (cited on Wikipedia).",
+          "source_url": "https://en.wikipedia.org/wiki/Neil_Peart"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "The really good drummers make what they're playing sound effortless-not labored.",
+          "topic": "technique",
+          "source_title": "Interview: Neil Peart",
+          "publication": "Modern Drummer",
+          "date": "December 1989",
+          "url": "https://www.2112.net/powerwindows/transcripts/19891200moderndrummer.htm",
+          "verified": "verbatim match on fetched page; Transcript archived on 2112.net Power Windows"
+        },
+        {
+          "quote": "I spent 20 years on technique and on learning the finer points of keeping good time, developing tempo and shadings of rhythmic feel, and keeping my mind open to other ethnic music and other drummers",
+          "topic": "technique",
+          "source_title": "Interview: Neil Peart",
+          "publication": "Modern Drummer",
+          "date": "December 1989",
+          "url": "https://www.2112.net/powerwindows/transcripts/19891200moderndrummer.htm",
+          "verified": "verbatim match on fetched page; Transcript archived on 2112.net Power Windows"
+        },
+        {
+          "quote": "Confidence really was the key for me. I was never a confident player at all-flamboyant, overplaying, yes, but never confident.",
+          "topic": "feeling",
+          "source_title": "Interview: Neil Peart",
+          "publication": "Modern Drummer",
+          "date": "December 1989",
+          "url": "https://www.2112.net/powerwindows/transcripts/19891200moderndrummer.htm",
+          "verified": "verbatim match on fetched page; Transcript archived on 2112.net Power Windows"
+        },
+        {
+          "quote": "When I heard a song, I would look for a place to put this lovely new idea that I had.",
+          "topic": "arranging",
+          "source_title": "Interview: Neil Peart",
+          "publication": "Modern Drummer",
+          "date": "December 1989",
+          "url": "https://www.2112.net/powerwindows/transcripts/19891200moderndrummer.htm",
+          "verified": "verbatim match on fetched page; Transcript archived on 2112.net Power Windows"
+        },
+        {
+          "quote": "I do get really annoyed with musicians who are proud of the fact that they don't practice and never took a lesson.",
+          "topic": "practice",
+          "source_title": "Interview: Neil Peart",
+          "publication": "Modern Drummer",
+          "date": "December 1989",
+          "url": "https://www.2112.net/powerwindows/transcripts/19891200moderndrummer.htm",
+          "verified": "verbatim match on fetched page; Transcript archived on 2112.net Power Windows"
+        },
+        {
+          "quote": "I trust myself more now - that's what it is!",
+          "topic": "improvisation",
+          "source_title": "Neil Peart: The Modern Drummer Interview",
+          "publication": "Modern Drummer",
+          "date": "December 2011",
+          "url": "https://www.2112.net/powerwindows/transcripts/20111200moderndrummer.htm",
+          "verified": "verbatim match on fetched page; Transcript archived on 2112.net Power Windows"
+        }
+      ]
+    },
+    {
+      "name": "John Bonham",
+      "signature_techniques": [
+        {
+          "claim": "Fast single-foot kick drumming: the 'Good Times Bad Times' bass-drum triplets, played on one pedal.",
+          "source_url": "https://www.drumeo.com/beat/how-to-play-triplets-like-bonham/"
+        },
+        {
+          "claim": "Hand-to-foot triplets that lead with the left hand (Dazed and Confused).",
+          "source_url": "https://www.drumeo.com/beat/how-to-play-triplets-like-bonham/"
+        },
+        {
+          "claim": "A variant of the Bernard Purdie half-time shuffle on 'Fool in the Rain'.",
+          "source_url": "https://www.nytimes.com/2009/03/31/theater/31purd.html"
+        },
+        {
+          "claim": "Bare hands on the drums during the 'Moby Dick' solo.",
+          "source_url": "https://en.wikipedia.org/wiki/John_Bonham"
+        },
+        {
+          "claim": "Later Zeppelin records include funk and Latin-influenced grooves.",
+          "source_url": "https://en.wikipedia.org/wiki/John_Bonham"
+        }
+      ],
+      "gear": [
+        {
+          "claim": "Started on Premier. Carmine Appice introduced him to Ludwig in the late 1960s, and he used Ludwig for the rest of his career.",
+          "source_url": "https://en.wikipedia.org/wiki/John_Bonham"
+        },
+        {
+          "claim": "Typical Ludwig setup: 26x14 bass drum, 14x10 (later 15x12) rack tom, 16x16 and 18x16 floor toms.",
+          "source_url": "https://johnbonham.co.uk/drumsetup/drums.html"
+        },
+        {
+          "claim": "On stage he used a Ludwig Supraphonic 402 snare (14x6.5) throughout his career.",
+          "source_url": "https://johnbonham.co.uk/drumsetup/snare-ludwig-supraphonic.html"
+        },
+        {
+          "claim": "Paiste cymbals, endorsement from 1971.",
+          "source_url": "https://en.wikipedia.org/wiki/John_Bonham"
+        },
+        {
+          "claim": "The kit grew after 1969 to include congas or timpani and a gong.",
+          "source_url": "https://en.wikipedia.org/wiki/John_Bonham"
+        }
+      ],
+      "feel": [
+        {
+          "claim": "Known for speed, power, a distinctive sound and a 'feel for groove' (AllMusic, as cited by Wikipedia).",
+          "source_url": "https://en.wikipedia.org/wiki/John_Bonham"
+        }
+      ],
+      "influences": [
+        {
+          "claim": "Max Roach, Gene Krupa, Buddy Rich. Mostly self-taught.",
+          "source_url": "https://en.wikipedia.org/wiki/John_Bonham"
+        },
+        {
+          "claim": "In 1972 he named the Graham Bond Organisation (with Ginger Baker and Jack Bruce) as an influence from his school days.",
+          "source_url": "https://ledzepnews.com/2024/11/07/full-transcript-the-1972-interview-that-brings-john-bonham-into-becoming-led-zeppelin/"
+        }
+      ],
+      "arranging": [
+        {
+          "claim": "Said he used cymbals mainly 'to crash into a solo and out of it' and preferred 'the actual drum sound' (1973 interview, quoted in Mick Bonham's book, via fan site).",
+          "source_url": "https://johnbonham.co.uk/quotes/johnbonham-quotes.html"
+        }
+      ],
+      "impact": [
+        {
+          "claim": "Regarded as one of the greatest and most influential drummers. Widely sampled in hip-hop: the Beastie Boys used Moby Dick, The Ocean and When the Levee Breaks, and Enigma's 'Return to Innocence' samples Levee.",
+          "source_url": "https://en.wikipedia.org/wiki/John_Bonham"
+        },
+        {
+          "claim": "His 'Fool in the Rain' shuffle is one strand of Jeff Porcaro's 'Rosanna' shuffle.",
+          "source_url": "https://www.openculture.com/2013/04/john_bonhams_isolated_drum_track_for_led_zeppelins_fool_in_the_rain.html"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "The drum sound, the sound I got on a couple of tracks was a sound that I've stumbled on and yet looked for for three years",
+          "topic": "sound",
+          "source_title": "1972 radio interview with Graeme Berry (2SM Sydney), full transcript",
+          "publication": "LedZepNews (transcript of 2SM radio interview)",
+          "date": "1972 (transcript published 7 Nov 2024)",
+          "url": "https://ledzepnews.com/2024/11/07/full-transcript-the-1972-interview-that-brings-john-bonham-into-becoming-led-zeppelin/",
+          "verified": "verbatim match on fetched page; Primary audio interview"
+        },
+        {
+          "quote": "there's a feeling, you know, when you play in a group, whether it's going to be any good or whether it's not",
+          "topic": "feeling",
+          "source_title": "1972 radio interview with Graeme Berry (2SM Sydney), full transcript",
+          "publication": "LedZepNews (transcript of 2SM radio interview)",
+          "date": "1972 (transcript published 7 Nov 2024)",
+          "url": "https://ledzepnews.com/2024/11/07/full-transcript-the-1972-interview-that-brings-john-bonham-into-becoming-led-zeppelin/",
+          "verified": "verbatim match on fetched page; Primary audio interview"
+        },
+        {
+          "quote": "I've always liked drums to be bright and powerful. I've never used cymbals much. I use them to crash into a solo and out of it, but basically I prefer the actual drum sound.",
+          "topic": "sound",
+          "source_title": "From Mick Bonham's book 'John Bonham: The Powerhouse Behind Led Zeppelin', via the JohnBonham.co.uk quotes page",
+          "publication": "Mick Bonham's book (via JohnBonham.co.uk fan site)",
+          "date": "1973 interview as quoted in the book (2005)",
+          "url": "https://johnbonham.co.uk/quotes/johnbonham-quotes.html",
+          "verified": "verbatim match on fetched page; SECONDARY: from Mick Bonham's book via a fan site; wording matches the fan site, book not checked directly"
+        },
+        {
+          "quote": "I really like to yell out when I'm playing. I yell like a bear to give it a boost. I like our act to be like a thunderstorm.",
+          "topic": "feeling",
+          "source_title": "From Mick Bonham's book 'John Bonham: The Powerhouse Behind Led Zeppelin', via the JohnBonham.co.uk quotes page",
+          "publication": "Mick Bonham's book (via JohnBonham.co.uk fan site)",
+          "date": "1973 interview as quoted in the book (2005)",
+          "url": "https://johnbonham.co.uk/quotes/johnbonham-quotes.html",
+          "verified": "verbatim match on fetched page; SECONDARY: from Mick Bonham's book via a fan site; wording matches the fan site, book not checked directly"
+        },
+        {
+          "quote": "It's all to do with the swing. You get a much better tone with a big stroke than you do with a short stab.",
+          "topic": "technique",
+          "source_title": "From Mick Bonham's book 'John Bonham: The Powerhouse Behind Led Zeppelin', via the JohnBonham.co.uk quotes page",
+          "publication": "Mick Bonham's book (via JohnBonham.co.uk fan site)",
+          "date": "1973 interview as quoted in the book (2005)",
+          "url": "https://johnbonham.co.uk/quotes/johnbonham-quotes.html",
+          "verified": "verbatim match on fetched page; SECONDARY: from Mick Bonham's book via a fan site; wording matches the fan site, book not checked directly"
+        },
+        {
+          "quote": "If you play technically you sound like everybody else. It's being original that counts.",
+          "topic": "originality",
+          "source_title": "From Mick Bonham's book 'John Bonham: The Powerhouse Behind Led Zeppelin', via the JohnBonham.co.uk quotes page",
+          "publication": "Mick Bonham's book (via JohnBonham.co.uk fan site)",
+          "date": "1973 interview as quoted in the book (2005)",
+          "url": "https://johnbonham.co.uk/quotes/johnbonham-quotes.html",
+          "verified": "verbatim match on fetched page; SECONDARY: from Mick Bonham's book via a fan site; wording matches the fan site, book not checked directly"
+        }
+      ]
+    },
+    {
+      "name": "Ringo Starr",
+      "signature_techniques": [
+        {
+          "claim": "A left-handed player on a right-handed kit. He starts fills on the floor tom and moves up, and used open 'snatch' hi-hats to make room for fills (Rain).",
+          "source_url": "https://pas.org/ringo-starr/"
+        },
+        {
+          "claim": "Brought matched grip into the mainstream.",
+          "source_url": "https://pas.org/ringo-starr/"
+        },
+        {
+          "claim": "Played the Beatles' percussion parts too: maracas, tambourine, bongos, congas, timpani on 'Every Little Thing'.",
+          "source_url": "https://pas.org/ringo-starr/"
+        }
+      ],
+      "gear": [
+        {
+          "claim": "Ludwig Black Oyster Pearl kit. The Ludwig logo on his bass drum made Ludwig the dominant North American drum maker for about 20 years.",
+          "source_url": "https://en.wikipedia.org/wiki/Ringo_Starr"
+        },
+        {
+          "claim": "Draped tea towels over the drums for a deep, muffled sound, for example on 'Come Together' and 'Something' (per Geoff Emerick).",
+          "source_url": "https://www.cheatsheet.com/news/ringo-starr-used-towels-create-the-beatles-come-together.html/"
+        }
+      ],
+      "feel": [
+        {
+          "claim": "Emphasised feel over technical virtuosity. Never plays over the vocal; 'Drummers hold it together.'",
+          "source_url": "https://www.rollingstone.com/music/music-features/dave-grohl-ringo-starr-interview-musicians-on-musicians-902778/"
+        }
+      ],
+      "influences": [
+        {
+          "claim": "Named Cozy Cole's 'Topsy Part Two' as 'the one drum record' he bought, and said he 'was never really into drummers'.",
+          "source_url": "https://en.wikipedia.org/wiki/Ringo_Starr"
+        },
+        {
+          "claim": "Started in skiffle, then rock & roll with Rory Storm and the Hurricanes.",
+          "source_url": "https://www.rollingstone.com/music/music-features/dave-grohl-ringo-starr-interview-musicians-on-musicians-902778/"
+        }
+      ],
+      "arranging": [
+        {
+          "claim": "Wrote song-specific drum parts that are identifiable without the rest of the music (Steve Smith). Saved fills for gaps in the vocal (Gregg Bissonette).",
+          "source_url": "https://pas.org/ringo-starr/"
+        }
+      ],
+      "impact": [
+        {
+          "claim": "Influenced drummers to think compositionally, and spread matched grip, lower tuning and muffling. Inducted into the PAS Hall of Fame (2002) and Modern Drummer Hall of Fame (1999).",
+          "source_url": "https://en.wikipedia.org/wiki/Ringo_Starr"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "Everyone put me down–said that I couldn't play. They didn't realize that was my style and I wasn't playing like anyone else–that I couldn't play like anyone else.",
+          "topic": "style",
+          "source_title": "Ringo Starr – PAS Hall of Fame (by Robyn Flans, quoting her Modern Drummer interviews)",
+          "publication": "Percussive Arts Society",
+          "date": "Quotes from Modern Drummer 1981 and 1997 interviews",
+          "url": "https://pas.org/ringo-starr/",
+          "verified": "verbatim match on fetched page; Interviewer's own quotation of her MD interviews"
+        },
+        {
+          "quote": "I cannot start on the snare, go to the top tom, and then go to the floor tom. I have to start on the floor tom and move up",
+          "topic": "technique",
+          "source_title": "Ringo Starr – PAS Hall of Fame (by Robyn Flans, quoting her Modern Drummer interviews)",
+          "publication": "Percussive Arts Society",
+          "date": "Quotes from Modern Drummer 1981 and 1997 interviews",
+          "url": "https://pas.org/ringo-starr/",
+          "verified": "verbatim match on fetched page; Interviewer's own quotation of her MD interviews"
+        },
+        {
+          "quote": "A lot of it was telepathy. We all felt so close.",
+          "topic": "band feel",
+          "source_title": "Ringo Starr – PAS Hall of Fame (by Robyn Flans, quoting her Modern Drummer interviews)",
+          "publication": "Percussive Arts Society",
+          "date": "Quotes from Modern Drummer 1981 and 1997 interviews",
+          "url": "https://pas.org/ringo-starr/",
+          "verified": "verbatim match on fetched page; Interviewer's own quotation of her MD interviews"
+        },
+        {
+          "quote": "I always thought that's what we do: Drummers hold it together. I never play over the vocals.",
+          "topic": "role",
+          "source_title": "Musicians on Musicians: Ringo Starr & Dave Grohl (by Hank Shteamer)",
+          "publication": "Rolling Stone",
+          "date": "30 October 2019",
+          "url": "https://www.rollingstone.com/music/music-features/dave-grohl-ringo-starr-interview-musicians-on-musicians-902778/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "I never listened just for the drums. I listened for the whole track.",
+          "topic": "influences",
+          "source_title": "Musicians on Musicians: Ringo Starr & Dave Grohl (by Hank Shteamer)",
+          "publication": "Rolling Stone",
+          "date": "30 October 2019",
+          "url": "https://www.rollingstone.com/music/music-features/dave-grohl-ringo-starr-interview-musicians-on-musicians-902778/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "It's like, not knowing has really helped me a lot.",
+          "topic": "style",
+          "source_title": "Musicians on Musicians: Ringo Starr & Dave Grohl (by Hank Shteamer)",
+          "publication": "Rolling Stone",
+          "date": "30 October 2019",
+          "url": "https://www.rollingstone.com/music/music-features/dave-grohl-ringo-starr-interview-musicians-on-musicians-902778/",
+          "verified": "verbatim match on fetched page"
+        }
+      ]
+    },
+    {
+      "name": "Stewart Copeland",
+      "signature_techniques": [
+        {
+          "claim": "Reggae-inspired 'upside-down' grooves that don't just play a backbeat. He traces this to Desmond Dekker's 'Israelites'.",
+          "source_url": "https://www.moderndrummer.com/article/october-1982-stewart-copeland/"
+        },
+        {
+          "claim": "Uses the hi-hat as 'the upper level of the rhythm', with left-foot control of its texture. Plays off repeat-echo delay rhythms (Walking on the Moon).",
+          "source_url": "https://www.vulture.com/2022/03/interview-stewart-copeland-on-the-police-sting.html"
+        }
+      ],
+      "gear": [
+        {
+          "claim": "Tama drums, Paiste cymbals, Remo heads, Vater sticks. Added Octobans. Helped Paiste design a splash cymbal. Relies heavily on 13-inch hi-hats.",
+          "source_url": "https://en.wikipedia.org/wiki/Stewart_Copeland"
+        },
+        {
+          "claim": "In 1982: repeat echo on the hi-hat and Octobans, a Synare, and a dead Rototom under his left hand.",
+          "source_url": "https://www.moderndrummer.com/article/october-1982-stewart-copeland/"
+        }
+      ],
+      "feel": [
+        {
+          "claim": "Says he aims for a 'full relaxed' Joe Morello-style sound, 'letting the drums sing'.",
+          "source_url": "https://www.sweetwater.com/insync/stewart-copeland-opens-drumming-career-etc/"
+        }
+      ],
+      "influences": [
+        {
+          "claim": "Buddy Rich (his drum hero at 14), Mitch Mitchell, Joe Morello, reggae drummers, and Arabic baladi rhythms from growing up in Beirut.",
+          "source_url": "https://www.vulture.com/2022/03/interview-stewart-copeland-on-the-police-sting.html"
+        },
+        {
+          "claim": "Grew up in Beirut listening to Lebanese music, rock and roll, jazz and reggae.",
+          "source_url": "https://en.wikipedia.org/wiki/Stewart_Copeland"
+        }
+      ],
+      "arranging": [
+        {
+          "claim": "Describes 'Every Breath You Take' as an outlier: a composed, overdubbed part with separate snare, hi-hat and kick takes.",
+          "source_url": "https://www.musicradar.com/news/stewart-copeland-police-interview"
+        }
+      ],
+      "impact": [
+        {
+          "claim": "Ranked the 10th-best drummer of all time by Rolling Stone. Peter Gabriel brought him in for 'Red Rain' and 'Big Time' for his 'hi-hat mastery'.",
+          "source_url": "https://en.wikipedia.org/wiki/Stewart_Copeland"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "it just showed me that you can turn a drumset completely upside down. You don't have to just play a backbeat.",
+          "topic": "influence",
+          "source_title": "Stewart Copeland (by Robyn Flans)",
+          "publication": "Modern Drummer",
+          "date": "October 1982",
+          "url": "https://www.moderndrummer.com/article/october-1982-stewart-copeland/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "The hi-hat is the upper level of the rhythm.",
+          "topic": "hi-hat",
+          "source_title": "Stewart Copeland on The Police & Sting",
+          "publication": "Vulture",
+          "date": "March 2022",
+          "url": "https://www.vulture.com/2022/03/interview-stewart-copeland-on-the-police-sting.html",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "So your left foot is controlling the texture of that upper-level rhythm with a high degree of expression.",
+          "topic": "hi-hat",
+          "source_title": "Stewart Copeland on The Police & Sting",
+          "publication": "Vulture",
+          "date": "March 2022",
+          "url": "https://www.vulture.com/2022/03/interview-stewart-copeland-on-the-police-sting.html",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "the emphasis on the third beat of the bar while leaving a gaping chasm where one should be.",
+          "topic": "rhythm",
+          "source_title": "Interview: Stewart Copeland Opens Up About Drumming, Inspiration, and Tama Drums",
+          "publication": "Sweetwater InSync",
+          "date": "9 July 2018",
+          "url": "https://www.sweetwater.com/insync/stewart-copeland-opens-drumming-career-etc/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "That sound of the drums, full relaxed. Just letting the drums sing.",
+          "topic": "feel",
+          "source_title": "Interview: Stewart Copeland Opens Up About Drumming, Inspiration, and Tama Drums",
+          "publication": "Sweetwater InSync",
+          "date": "9 July 2018",
+          "url": "https://www.sweetwater.com/insync/stewart-copeland-opens-drumming-career-etc/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "The drums, I'm proud of how simple they are. They're very Zen.",
+          "topic": "simplicity",
+          "source_title": "Classic interview: Stewart Copeland on his Police career",
+          "publication": "MusicRadar",
+          "date": "3 February 2022",
+          "url": "https://www.musicradar.com/news/stewart-copeland-police-interview",
+          "verified": "verbatim match on fetched page"
+        }
+      ]
+    },
+    {
+      "name": "Tony Allen",
+      "signature_techniques": [
+        {
+          "claim": "Plays with all four limbs carrying parts. He told Songlines 'the drums were made for four limbs', and Fela said he 'sounded like four drummers'.",
+          "source_url": "https://www.songlines.co.uk/content/features/giants-of-afrobeat-an-interview-with-tony-allen-and-orlando-julius-1"
+        },
+        {
+          "claim": "Soft, subtle dynamics: 'flowing like a river'.",
+          "source_url": "https://www.theguardian.com/music/2016/aug/05/fela-was-right-but-i-detest-singing-militant-tony-allen"
+        }
+      ],
+      "gear": [],
+      "feel": [
+        {
+          "claim": "Relaxed and conversational. The drums 'ask a question' and the horns or guitar answer.",
+          "source_url": "https://www.songlines.co.uk/content/features/giants-of-afrobeat-an-interview-with-tony-allen-and-orlando-julius-1"
+        }
+      ],
+      "influences": [
+        {
+          "claim": "Jùjú, American jazz and highlife. Studied recordings by Art Blakey and Max Roach, as well as Ghanaian drummer Guy Warren (Kofi Ghanaba).",
+          "source_url": "https://en.wikipedia.org/wiki/Tony_Allen_(musician)"
+        }
+      ],
+      "arranging": [
+        {
+          "claim": "Drummer and musical director of Fela Kuti's Africa '70 (1968–79) and a co-founder of Afrobeat.",
+          "source_url": "https://en.wikipedia.org/wiki/Tony_Allen_(musician)"
+        },
+        {
+          "claim": "Recorded with Hugh Masekela with nothing worked out in advance, building on his own 'drum patterns'.",
+          "source_url": "https://www.theguardian.com/music/2020/mar/19/tony-allen-afrobeats-master-on-hugh-masekela-damon-albarn-and-friction-with-fela-kuti"
+        }
+      ],
+      "impact": [
+        {
+          "claim": "Fela said 'without Tony Allen, there would be no Afrobeat'. Brian Eno called him 'perhaps the greatest drummer who has ever lived'. Collaborated with Damon Albarn (The Good, the Bad & the Queen; Rocket Juice & the Moon). Tributes on his death came from Flea, Peter Gabriel and others.",
+          "source_url": "https://en.wikipedia.org/wiki/Tony_Allen_(musician)"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "Some drummers don't know what it means to play soft, it's not in their book",
+          "topic": "dynamics",
+          "source_title": "Tony Allen: 'Fela was right – but I detest singing militant'",
+          "publication": "The Guardian",
+          "date": "5 August 2016",
+          "url": "https://www.theguardian.com/music/2016/aug/05/fela-was-right-but-i-detest-singing-militant-tony-allen",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "I know I can make my drums bring the house down if I have to. But I know how to make it subtle. You listen to it flowing like a river.",
+          "topic": "dynamics",
+          "source_title": "Tony Allen: 'Fela was right – but I detest singing militant'",
+          "publication": "The Guardian",
+          "date": "5 August 2016",
+          "url": "https://www.theguardian.com/music/2016/aug/05/fela-was-right-but-i-detest-singing-militant-tony-allen",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "When I'm in a happy mood playing, you can hear me like six drummers. On some days it could be 100!",
+          "topic": "feeling",
+          "source_title": "Tony Allen: 'Fela was right – but I detest singing militant'",
+          "publication": "The Guardian",
+          "date": "5 August 2016",
+          "url": "https://www.theguardian.com/music/2016/aug/05/fela-was-right-but-i-detest-singing-militant-tony-allen",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "But the drums were made for four limbs. A few jazz drummers use their four limbs, but most drummers don't. I want all my four limbs to be working.",
+          "topic": "technique",
+          "source_title": "Giants of Afrobeat: an interview with Tony Allen and Orlando Julius",
+          "publication": "Songlines",
+          "date": "November 2014 issue (republished May 2020)",
+          "url": "https://www.songlines.co.uk/content/features/giants-of-afrobeat-an-interview-with-tony-allen-and-orlando-julius-1",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "You don't ride a bicycle with one leg",
+          "topic": "technique",
+          "source_title": "Giants of Afrobeat: an interview with Tony Allen and Orlando Julius",
+          "publication": "Songlines",
+          "date": "November 2014 issue (republished May 2020)",
+          "url": "https://www.songlines.co.uk/content/features/giants-of-afrobeat-an-interview-with-tony-allen-and-orlando-julius-1",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "I like to have a conversation between the drums and other instruments. You ask a question with the drums and the guitar or saxophone answers.",
+          "topic": "conversation",
+          "source_title": "Giants of Afrobeat: an interview with Tony Allen and Orlando Julius",
+          "publication": "Songlines",
+          "date": "November 2014 issue (republished May 2020)",
+          "url": "https://www.songlines.co.uk/content/features/giants-of-afrobeat-an-interview-with-tony-allen-and-orlando-julius-1",
+          "verified": "verbatim match on fetched page"
+        }
+      ]
+    },
+    {
+      "name": "Danny Carey",
+      "signature_techniques": [
+        {
+          "claim": "Odd time signatures, polyrhythms and polymeters. Practises rudiments and snare solos with his feet.",
+          "source_url": "https://en.wikipedia.org/wiki/Danny_Carey"
+        },
+        {
+          "claim": "Example meters: 'The Grudge' is mostly in five, 'Ticks and Leeches' is in 7/4 with tom accents in three over seven, and 'Lateralus' opens with 9/8, 8/8 and 7/4.",
+          "source_url": "http://toolshed.down.net/articles/text/mdrum.jun.2001.html"
+        },
+        {
+          "claim": "Tunes the toms to the song's key, for example a D-F-A triad for songs in D minor.",
+          "source_url": "http://toolshed.down.net/articles/text/mdrum.jun.2001.html"
+        },
+        {
+          "claim": "Studied tabla with Aloke Dutta, which you can hear on 'Disposition' and 'Right in Two'. He triggers tabla samples live from pads.",
+          "source_url": "https://en.wikipedia.org/wiki/Danny_Carey"
+        }
+      ],
+      "gear": [
+        {
+          "claim": "Sonor drums (including a 2009 signature 14x8 bronze snare), Paiste cymbals, Evans heads, Hammerax, and Mandala, Korg and Roland electronics.",
+          "source_url": "https://en.wikipedia.org/wiki/Danny_Carey"
+        },
+        {
+          "claim": "Simmons SDX pads in 2001. Arranges his kit by golden-section ratios: five toms, six six-sided pads.",
+          "source_url": "https://toolshed.down.net/articles/index.php?action=view-article&id=February_1997--Modern_Drummer.html"
+        }
+      ],
+      "feel": [
+        {
+          "claim": "Wants a ritualistic, trance-like effect, sometimes emulating 'five African drummers' with polyrhythms.",
+          "source_url": "http://toolshed.down.net/articles/text/mdrum.jun.2001.html"
+        }
+      ],
+      "influences": [
+        {
+          "claim": "Bill Bruford ('one of my biggest influences').",
+          "source_url": "http://toolshed.down.net/articles/text/mdrum.jun.2001.html"
+        },
+        {
+          "claim": "Billy Cobham and Buddy Rich for their articulation. Drum corps and rudimental training. Classical study in college.",
+          "source_url": "https://toolshed.down.net/articles/index.php?action=view-article&id=February_1997--Modern_Drummer.html"
+        },
+        {
+          "claim": "Studied at the University of Missouri–Kansas City and played in the Kansas City jazz scene.",
+          "source_url": "https://en.wikipedia.org/wiki/Danny_Carey"
+        }
+      ],
+      "arranging": [
+        {
+          "claim": "Calls his role in Tool 'more like the music director' and takes part in a lot of the arranging.",
+          "source_url": "https://www.revolvermag.com/music/tools-danny-carey-fear-inoculum-sacred-geometry-being-bands-enforcer/"
+        },
+        {
+          "claim": "Parts come out of long taped jams. He says there's 'never any mention of time signatures', and meters only come up when they're arranging.",
+          "source_url": "http://toolshed.down.net/articles/text/mdrum.jun.2001.html"
+        }
+      ],
+      "impact": [],
+      "quotes": [
+        {
+          "quote": "It's all about setting my drums up so that I don't get in the way of the music, so I'm just a channel for the music.",
+          "topic": "setup",
+          "source_title": "Danny Carey interview",
+          "publication": "Modern Drummer",
+          "date": "February 1997",
+          "url": "https://toolshed.down.net/articles/index.php?action=view-article&id=February_1997--Modern_Drummer.html",
+          "verified": "verbatim match on fetched page; Transcript archived on The Tool Page"
+        },
+        {
+          "quote": "I always appreciated guys like Billy Cobham and Buddy Rich so much because no matter how fast they played, you could always hear every note.",
+          "topic": "technique",
+          "source_title": "Danny Carey interview",
+          "publication": "Modern Drummer",
+          "date": "February 1997",
+          "url": "https://toolshed.down.net/articles/index.php?action=view-article&id=February_1997--Modern_Drummer.html",
+          "verified": "verbatim match on fetched page; Transcript archived on The Tool Page"
+        },
+        {
+          "quote": "The trick about that is making sure there's space between your notes.",
+          "topic": "technique",
+          "source_title": "Danny Carey interview",
+          "publication": "Modern Drummer",
+          "date": "February 1997",
+          "url": "https://toolshed.down.net/articles/index.php?action=view-article&id=February_1997--Modern_Drummer.html",
+          "verified": "verbatim match on fetched page; Transcript archived on The Tool Page"
+        },
+        {
+          "quote": "I'm riding 16ths on the hi-hat and opening it every third stroke, sort of a polyrhythm over what I'm doing with the kick and snare.",
+          "topic": "polyrhythm",
+          "source_title": "Danny Carey interview",
+          "publication": "Modern Drummer",
+          "date": "February 1997",
+          "url": "https://toolshed.down.net/articles/index.php?action=view-article&id=February_1997--Modern_Drummer.html",
+          "verified": "verbatim match on fetched page; Transcript archived on The Tool Page"
+        },
+        {
+          "quote": "This has been a real seven-based record for some reason.",
+          "topic": "meter",
+          "source_title": "Tool's Danny Carey on 'Fear Inoculum,' Sacred Geometry, Being Band's 'Enforcer' (by J. Bennett)",
+          "publication": "Revolver",
+          "date": "15 August 2019",
+          "url": "https://www.revolvermag.com/music/tools-danny-carey-fear-inoculum-sacred-geometry-being-bands-enforcer/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "Mystery is everything.",
+          "topic": "mystery",
+          "source_title": "Tool's Danny Carey on 'Fear Inoculum,' Sacred Geometry, Being Band's 'Enforcer' (by J. Bennett)",
+          "publication": "Revolver",
+          "date": "15 August 2019",
+          "url": "https://www.revolvermag.com/music/tools-danny-carey-fear-inoculum-sacred-geometry-being-bands-enforcer/",
+          "verified": "verbatim match on fetched page"
+        }
+      ]
+    },
+    {
+      "name": "Josh Freese",
+      "signature_techniques": [
+        {
+          "claim": "A session approach built on restraint: no cool fills in the first verse. He follows the bass and plans where the hi-hats open or close for each section.",
+          "source_url": "https://www.moderndrummer.com/2007/07/josh-freese-2/"
+        }
+      ],
+      "gear": [
+        {
+          "claim": "Starts from a basic 'Ringo 4-piece' and adds per band. For A Perfect Circle: 2 racks, 2 floors, a second snare and more cymbals. For NIN: bigger drums (24 kick, 18 and 20 floors).",
+          "source_url": "https://en.wikipedia.org/wiki/Josh_Freese"
+        }
+      ],
+      "feel": [
+        {
+          "claim": "Says playing slow and making it feel right is the hard part, and that 'less is more' is a sign of maturity.",
+          "source_url": "https://www.moderndrummer.com/2007/07/josh-freese-2/"
+        }
+      ],
+      "influences": [
+        {
+          "claim": "Jim Keltner, Steve Jordan, Jeff Porcaro, and songwriters. Grew up playing along to Van Halen, Queen and Devo.",
+          "source_url": "https://www.moderndrummer.com/2004/05/josh-freese/"
+        },
+        {
+          "claim": "Long relationships with Vinnie Colaiuta and Terry Bozzio since childhood.",
+          "source_url": "https://www.drummersresource.com/josh-freese-interview/"
+        }
+      ],
+      "arranging": [
+        {
+          "claim": "Asks how closely to follow the demo, opens up on choruses, and saves fills for the end or the solo.",
+          "source_url": "https://www.moderndrummer.com/2007/07/josh-freese-2/"
+        }
+      ],
+      "impact": [
+        {
+          "claim": "Appears on 400+ albums since 1986. Member of The Vandals (since 1989), A Perfect Circle (1999–2012 and since 2024), Guns N' Roses (1997–99), and Foo Fighters (2023 until he was let go in May 2025).",
+          "source_url": "https://en.wikipedia.org/wiki/Josh_Freese"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "I learned the hard way about overplaying in the studio. At first I wanted to play everything I knew. But what's hard to do is to play slow and make that feel right.",
+          "topic": "restraint",
+          "source_title": "Josh Freese: Time Bandit",
+          "publication": "Modern Drummer",
+          "date": "July 2007",
+          "url": "https://www.moderndrummer.com/2007/07/josh-freese-2/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "Learning about less is more is a sign of maturity.",
+          "topic": "restraint",
+          "source_title": "Josh Freese: Time Bandit",
+          "publication": "Modern Drummer",
+          "date": "July 2007",
+          "url": "https://www.moderndrummer.com/2007/07/josh-freese-2/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "I cue off what the bass is doing, whether I'll be playing down or up.",
+          "topic": "arranging",
+          "source_title": "Josh Freese: Time Bandit",
+          "publication": "Modern Drummer",
+          "date": "July 2007",
+          "url": "https://www.moderndrummer.com/2007/07/josh-freese-2/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "But I won't do cool fills in the first verse.",
+          "topic": "arranging",
+          "source_title": "Josh Freese: Time Bandit",
+          "publication": "Modern Drummer",
+          "date": "July 2007",
+          "url": "https://www.moderndrummer.com/2007/07/josh-freese-2/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "being supportive of that, being a team player rather than a hot dog.",
+          "topic": "listening",
+          "source_title": "Josh Freese",
+          "publication": "Modern Drummer",
+          "date": "May 2004",
+          "url": "https://www.moderndrummer.com/2004/05/josh-freese/",
+          "verified": "verbatim match on fetched page"
+        },
+        {
+          "quote": "I got less into the circus tricks and more into people like Keltner, Jordan, and Porcaro.",
+          "topic": "influences",
+          "source_title": "Josh Freese",
+          "publication": "Modern Drummer",
+          "date": "May 2004",
+          "url": "https://www.moderndrummer.com/2004/05/josh-freese/",
+          "verified": "verbatim match on fetched page"
+        }
+      ]
+    }
+  ]
+}
