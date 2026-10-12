@@ -22,7 +22,7 @@ export const VOICE_ALIASES: Record<string, Voice> = {
 }
 
 export interface SongSection { name: string; start: number; bars: number; confidence?: string; timeSig?: string }
-export interface Song { raw: SongEntryRaw & { form?: { section: string; bars: number; timeSig?: string[] }[]; category?: string; transcription?: { source: string; songId: number; revisionId: number; track: string; bars: number } }
+export interface Song { raw: SongEntryRaw & { form?: { section: string; bars: number; timeSig?: string[] }[]; category?: string; firstDrumBar?: number; transcription?: { source: string; songId: number; revisionId: number; track: string; bars: number } }
   pattern: Pattern; fills: Fill[]; bars: Pattern[]; sections: SongSection[] }
 function stringTracks(b: Record<string, string>): Track {
   const t: Track = {}

@@ -24,7 +24,7 @@ interface Ctx {
   toggle: () => Promise<void>; setBpm: (n: number) => void; setSwing: (n: number) => void; setKit: (id: string) => void
   subscribe: RhythmEngine['subscribe']
   song: Song | null; songBar: number; loopSection: number | null
-  loadSong: (s: Song, section?: number) => Promise<void>; jumpSection: (i: number) => void; setLoopSection: (i: number | null) => void
+  loadSong: (s: Song, section?: number) => Promise<void>; jumpBar: (bar: number) => void; jumpSection: (i: number) => void; setLoopSection: (i: number | null) => void
 }
 export const sectionOf = (s: Song, bar: number) => Math.max(0, s.sections.findIndex(x => bar >= x.start && bar < x.start + x.bars))
 const C = createContext<Ctx>(null!)
@@ -81,6 +81,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       en.setSong(sg.bars); const st = sg.sections[sec]?.start ?? 0; en.jumpSong(st); setSong(sg); setSongBar(st); setLoopS(null); setSwingS(0); en.setSwing(0)
       setBpmS(sg.raw.bpm); en.setBpm(sg.raw.bpm)
     },
+    jumpBar: b => { e().jumpSong(b); if (!e().playing) setSongBar(b) },
     jumpSection: i => { if (!song) return; const st = song.sections[i].start; e().jumpSong(st); if (!e().playing) setSongBar(st)
       if (loopSection !== null && loopSection !== i) { setLoopS(i); e().setSongLoop([st, st + song.sections[i].bars]) } },
     setLoopSection: i => { setLoopS(i); e().setSongLoop(i === null || !song ? null : [song.sections[i].start, song.sections[i].start + song.sections[i].bars]) },
@@ -264,17 +265,19 @@ function FillPicker() {
 function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
   const [dy, setDy] = useState(0); const y0 = useRef<number | null>(null)
   useEffect(() => { if (!open) setDy(0) }, [open])
+  useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }; addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [onClose])
   return <>
     <div onClick={onClose} className={`fixed inset-0 z-40 bg-black/55 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
     <div role="dialog" aria-modal="true" aria-hidden={!open} className={`fixed inset-x-0 bottom-0 z-50 transition-transform ${y0.current === null ? 'duration-300 ease-out' : 'duration-0'} ${open ? '' : 'translate-y-full'}`} style={open && dy ? { transform: `translateY(${dy}px)` } : undefined}>
       <div className="max-w-xl mx-auto rounded-t-[24px] bg-[#141416] border-t border-white/[0.08] shadow-2xl shadow-black pb-[env(safe-area-inset-bottom)]">
-        <div className="relative h-12 touch-none cursor-grab" onTouchStart={e => { y0.current = e.touches[0].clientY }} onTouchMove={e => { if (y0.current !== null) setDy(Math.max(0, e.touches[0].clientY - y0.current)) }} onTouchEnd={() => { if (dy > 80) onClose(); y0.current = null; setDy(0) }}>
-          <span className="absolute left-1/2 top-2.5 -translate-x-1/2 w-10 h-1.5 rounded-full bg-white/25" />
-          <button aria-label="Close player" onClick={onClose} className="absolute right-2 top-1 w-11 h-11 grid place-items-center rounded-full text-bone/70 active:scale-90">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
+        <div className="sticky top-0 z-10 flex items-center h-14 pl-4 pr-1 border-b border-white/[0.06] touch-none cursor-grab rounded-t-[24px] bg-[#141416]" onTouchStart={e => { y0.current = e.touches[0].clientY }} onTouchMove={e => { if (y0.current !== null) setDy(Math.max(0, e.touches[0].clientY - y0.current)) }} onTouchEnd={() => { if (dy > 70) onClose(); y0.current = null; setDy(0) }}>
+          <span className="absolute left-1/2 top-2 -translate-x-1/2 w-10 h-1.5 rounded-full bg-white/30" />
+          <span className="text-[13px] text-mute">Player</span>
+          <button aria-label="Close player" onClick={onClose} className="ml-auto h-12 pl-4 pr-3 flex items-center gap-1.5 rounded-full text-sm text-bone/85 active:scale-95">
+            Close <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
           </button>
         </div>
-        <div className="max-h-[78vh] overflow-y-auto overscroll-contain px-4 pb-5">{children}</div>
+        <div className="max-h-[78vh] overflow-y-auto overscroll-contain px-4 pt-4 pb-5">{children}</div>
       </div>
     </div>
   </>
@@ -301,6 +304,7 @@ export function PlayerBar() {
           <div className="text-[14px] font-medium truncate">{title}</div>
           <div className="text-[11px] text-mute truncate">{kitLoading ? `Loading samples ${Math.round(P.kitProgress * 100)}%` : sub}</div>
         </button>
+        {sg && (sg.raw.firstDrumBar ?? 0) > 0 && P.songBar < (sg.raw.firstDrumBar ?? 0) && <button onClick={() => P.jumpBar(sg.raw.firstDrumBar!)} className="h-8 px-3 rounded-full bg-white/[0.08] text-[11px] text-bone/80 shrink-0">Skip to drums</button>}
         <button onClick={() => show('sound')} className="text-xs tabular-nums text-mute px-1 h-10">{P.bpm}</button>
         <button aria-label="Browse rhythms" onClick={() => show('browse')} className="w-10 h-10 shrink-0 grid place-items-center rounded-full bg-white/[0.08] text-xl active:scale-90">+</button>
       </div>
@@ -339,7 +343,9 @@ export function SongForm({ song }: { song?: Song }) {
   const live = P.song?.raw.id === sg.raw.id
   const cur = live ? sectionOf(sg, P.songBar) : -1
   const cur_step = useStep('song')
+  const fd = sg.raw.firstDrumBar ?? 0
   return <div>
+    {live && fd > 0 && P.songBar < fd && <button onClick={() => P.jumpBar(fd)} className="mb-2 h-9 px-4 rounded-full bg-white/[0.08] text-xs text-bone/80">Skip to drums ↓ bar {fd + 1}</button>}
     {live && sg.bars[P.songBar] && <StepGrid pattern={sg.bars[P.songBar]} current={P.playing ? cur_step : -1} />}
     <ol className="mt-3 divide-y divide-line">{sg.sections.map((s, i) => {
       const on = i === cur; const pct = on ? ((P.songBar - s.start + 1) / s.bars) * 100 : 0
