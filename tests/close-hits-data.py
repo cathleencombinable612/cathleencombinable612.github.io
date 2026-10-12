@@ -1,21 +1,17 @@
-import json,glob,os
-# flags any voice with two hits closer than 20 ms (flams count as 2 hits ~min(30ms, step/4) apart)
-bad={}
+import json,glob
+# Flags any voice with two hits closer than 20 ms, including sub-step hits. Flam/drag graces are spaced 20-28 ms by the engine.
+bad={};tot=0
 for f in sorted(glob.glob('/workspace/rhythm/public/songs/*.json')):
-    d=json.load(open(f)); k=d['id']; t=0.0; last={}; hits=0
+    d=json.load(open(f)); k=d['id']; t=0.0; last={}
     for s in d['sections']:
         for i,b in enumerate(s['bars']):
-            tps=s['ticksPerStep'][i]; bpm=s['bpm'][i]; stepSec=tps*60/bpm/12
-            n=len(next(iter(b.values())))
-            for st in range(n):
-                for v,str_ in b.items():
-                    c=str_[st]
-                    if c=='.': continue
-                    tt=t+st*stepSec
-                    if c in 'fr':
-                        g=max(0.02,min(0.028,stepSec/2))
-                        if g<0.02: bad.setdefault(k,[]).append((s['name'],i,v,'flam %.1fms'%(g*1000)))
-                    if v in last and tt-last[v]<0.02: bad.setdefault(k,[]).append((s['name'],i,v,'%.1fms'%((tt-last[v])*1000)))
-                    last[v]=tt
+            stepSec=s['ticksPerStep'][i]*60/s['bpm'][i]/12
+            rows={v:x for v,x in b.items() if not v.startswith('_')}; n=len(next(iter(rows.values())))
+            ev=[(t+st*stepSec,v) for v,x in rows.items() for st,c in enumerate(x) if c!='.']
+            ev+=[(t+(int(st)+fr)*stepSec,v) for v,m in b.get('_sub',{}).items() for st,l in m.items() for fr,_ in l]
+            for tt,v in sorted(ev):
+                tot+=1
+                if v in last and tt-last[v]<0.02: bad.setdefault(k,[]).append((s['name'],i,v,'%.1fms'%((tt-last[v])*1000)))
+                last[v]=tt
             t+=n*stepSec
-print({k:(len(v),v[:3]) for k,v in bad.items()})
+print('hits checked',tot,'| under 20 ms:',{k:(len(v),v[:3]) for k,v in bad.items()} or 'none')

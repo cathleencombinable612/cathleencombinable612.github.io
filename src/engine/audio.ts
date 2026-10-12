@@ -143,7 +143,8 @@ export class RhythmEngine {
   setLayers(layers: Layer[]) {
     this.layers = layers
     const ids = new Set([...layers.map(l => l.id), FILL_ID, FX_ID, SONG_ID])
-    for (const [id, c] of this.channels) if (!ids.has(id)) { this.clearInsts(c); c.gain.dispose(); this.channels.delete(id) }
+    // A layer leaving (section change) keeps ringing: its cymbals/toms decay naturally, then the channel is freed.
+    for (const [id, c] of this.channels) if (!ids.has(id)) { this.channels.delete(id); setTimeout(() => { this.clearInsts(c); c.gain.dispose() }, 8000) }
     for (const l of layers) this.channel(l.id, l.volume).gain.gain.rampTo(l.volume, 0.03)
   }
 
@@ -237,6 +238,14 @@ export class RhythmEngine {
     if (this.eventId !== null) tr.clear(this.eventId)
     this.eventId = null; tr.stop(); tr.position = 0
     this.listeners.forEach(f => f({}, 0))
+    // Stop: fade everything out quickly, then silence what's still ringing and restore levels.
+    const now = Tone.now()
+    for (const c of this.channels.values()) {
+      const g = c.gain.gain, v = g.getValueAtTime(now)
+      g.cancelScheduledValues(now); g.setValueAtTime(v, now); g.linearRampToValueAtTime(0, now + 0.15)
+      for (const i of Object.values(c.insts)) i?.choke?.(now + 0.16)
+      g.setValueAtTime(v, now + 0.2)
+    }
   }
   get playing() { return this.eventId !== null }
 }
